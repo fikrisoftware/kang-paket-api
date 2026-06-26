@@ -8,22 +8,42 @@ Alternatif lokal untuk Postman, Bruno, dan Insomnia — dengan fokus pada kemuda
 
 ---
 
-## Fitur Utama
+## Screenshot
 
-- **Project & Collection Management** — buat project, susun collection dalam folder, simpan request dengan rapi
-- **HTTP Request Builder** — semua method (GET, POST, PUT, DELETE, PATCH, dsb.), headers, query params, body (JSON, form, raw), dan autentikasi (Bearer, Basic, API Key)
-- **Response Viewer** — syntax highlighting, pretty-print JSON, lihat headers, timing, dan ukuran response
-- **Environments** — kelola variabel untuk Dev, Staging, dan Prod dengan interpolasi `{{VARIABLE}}`
-- **JSON Filter** — filter response besar dengan JSONPath (`$.data.users[*].email`) langsung di response viewer
-- **Request History** — riwayat request terakhir, grouped by date
-- **Import** dari: Postman Collection v2.1, OpenAPI 3.x / Swagger 2.x (JSON & YAML), Bruno, Insomnia v4
-- **Export** ke: Postman Collection v2.1, OpenAPI 3.0 (JSON & YAML), Bruno, Insomnia v4
+### Dark Mode
+![Kang Paket API — Dark Mode](docs/screenshots/dark-mode.png)
+
+### Light Mode
+![Kang Paket API — Light Mode](docs/screenshots/light-mode.png)
+
+> Screenshot akan diupdate seiring perkembangan fitur.
 
 ---
 
-## Screenshot
+## Fitur
 
-> *Coming soon*
+### Sudah Tersedia ✅
+- **Multi-tab** — buka beberapa request sekaligus, state tersimpan otomatis
+- **HTTP Request Builder** — semua method (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
+- **Request Params** — sinkronisasi dua arah dengan URL query string
+- **Request Headers** — key-value editor dengan toggle enable/disable
+- **Request Body** — JSON (dengan syntax highlighting), text, form-urlencoded
+- **Autentikasi** — Bearer token, Basic Auth, API Key (header atau query)
+- **Response Viewer** — status badge berwarna, timing, ukuran response
+- **Response Body** — syntax highlighting JSON, pretty-print otomatis
+- **Response Headers** — tabel sortable
+- **Copy & Download** — salin atau unduh response body
+- **Dark / Light Mode** — toggle tema, tersimpan otomatis
+- **Sidebar** — navigasi Collections dan History
+- **Project Management** — buka project dari folder lokal
+
+### Segera Hadir 🚧
+- **Collections** — simpan dan organisir request dalam folder
+- **Environments** — variabel `{{BASE_URL}}`, `{{TOKEN}}` untuk Dev/Staging/Prod
+- **JSON Filter** — filter response besar dengan JSONPath (`$.data.users[*].email`)
+- **Request History** — riwayat request terakhir grouped by date
+- **Import** dari: Postman Collection v2.1, OpenAPI 3.x/Swagger, Bruno, Insomnia v4
+- **Export** ke: Postman, OpenAPI (JSON & YAML), Bruno, Insomnia
 
 ---
 
@@ -56,6 +76,9 @@ npm install
 # Jalankan dalam mode development
 npm run dev
 
+# Type check
+npm run typecheck
+
 # Build distributable
 npm run build
 npm run dist
@@ -67,11 +90,11 @@ npm run dist
 
 | Layer | Teknologi |
 |---|---|
-| Desktop runtime | Electron 36+ |
+| Desktop runtime | Electron 34+ |
 | Build toolchain | electron-vite + Vite 6 |
 | UI | React 19 + TypeScript 5 |
-| State management | Zustand |
-| Styling | TailwindCSS v4 |
+| State management | Zustand + persist |
+| Styling | TailwindCSS v4 + CSS variables |
 | Code editor | CodeMirror 6 |
 | JSON filter | jsonpath-plus |
 | YAML parsing | js-yaml |
@@ -81,7 +104,7 @@ npm run dist
 
 ## Struktur Folder Project (Format File)
 
-Setiap project disimpan sebagai folder biasa — cocok untuk di-commit ke Git bersama kode kamu.
+Setiap project disimpan sebagai folder biasa — human-readable dan cocok untuk di-commit ke Git bersama kode kamu.
 
 ```
 my-api-project/
@@ -118,14 +141,14 @@ Gunakan [GitHub Issues](https://github.com/fikrisoftware/kang-paket-api/issues) 
 ## Roadmap
 
 - [x] Desain arsitektur & format file
-- [ ] App shell & layout
-- [ ] HTTP request builder + response viewer
-- [ ] Project & collection management
-- [ ] Environment variables
-- [ ] Import/export multi-format
-- [ ] JSON filter panel
+- [x] App shell & layout (sidebar, tab bar, theming)
+- [x] HTTP request builder + response viewer
+- [ ] Project & collection management (save/load ke file)
+- [ ] Environment variables (`{{VAR}}` substitution)
+- [ ] Import/export multi-format (Postman, OpenAPI, Bruno, Insomnia)
+- [ ] JSON filter panel (JSONPath / Ayakan)
 - [ ] Request history
-- [ ] GitHub Actions release pipeline
+- [ ] GitHub Actions release pipeline (Win/Mac/Linux)
 
 ---
 
@@ -136,5 +159,7 @@ Dirilis di bawah lisensi [MIT](LICENSE).
 ---
 
 <p align="center">
-  Dibuat dengan ☕ di Indonesia.
+  Dibuat dengan ☕ di Indonesia &nbsp;•&nbsp;
+  <a href="https://github.com/fikrisoftware/kang-paket-api/issues">Laporkan Bug</a> &nbsp;•&nbsp;
+  <a href="https://github.com/fikrisoftware/kang-paket-api/issues">Request Fitur</a>
 </p>
