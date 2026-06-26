@@ -36,6 +36,12 @@ function readProjectTree(dirPath: string): WorkspaceTree {
 }
 
 export function registerFsHandlers(): void {
+  ipcMain.handle('fs:pickFolder', async (): Promise<string | null> => {
+    const result = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'] })
+    if (result.canceled || !result.filePaths[0]) return null
+    return result.filePaths[0]
+  })
+
   ipcMain.handle('fs:openProject', async (): Promise<WorkspaceTree | null> => {
     const result = await dialog.showOpenDialog({ properties: ['openDirectory'] })
     if (result.canceled || !result.filePaths[0]) return null

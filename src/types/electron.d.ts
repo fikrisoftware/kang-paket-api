@@ -7,6 +7,7 @@ declare global {
   interface Window {
     electronAPI: {
       executeRequest: (req: NyiruRequest) => Promise<NyiruResponse>
+      pickFolder: () => Promise<string | null>
       openProject: () => Promise<WorkspaceTree | null>
       createProject: (dirPath: string, name: string) => Promise<WorkspaceTree>
       saveRequest: (projectPath: string, collectionName: string, req: RequestItem) => Promise<void>
