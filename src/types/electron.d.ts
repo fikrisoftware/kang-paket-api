@@ -1,4 +1,4 @@
-import type { NyiruRequest, NyiruResponse } from './request'
+import type { PaketRequest, PaketResponse } from './request'
 import type { WorkspaceTree } from './project'
 import type { RequestItem } from './collection'
 import type { HistoryEntry } from './history'
@@ -6,7 +6,7 @@ import type { HistoryEntry } from './history'
 declare global {
   interface Window {
     electronAPI: {
-      executeRequest: (req: NyiruRequest) => Promise<NyiruResponse>
+      executeRequest: (req: PaketRequest) => Promise<PaketResponse>
       pickFolder: () => Promise<string | null>
       openProject: () => Promise<WorkspaceTree | null>
       createProject: (dirPath: string, name: string) => Promise<WorkspaceTree>

@@ -20,7 +20,7 @@ export interface RequestAuth {
   apiKeyIn?: 'header' | 'query'
 }
 
-export interface NyiruRequest {
+export interface PaketRequest {
   method: string
   url: string
   headers: RequestHeader[]
@@ -28,7 +28,7 @@ export interface NyiruRequest {
   auth: RequestAuth
 }
 
-export interface NyiruResponse {
+export interface PaketResponse {
   status: number
   statusText: string
   headers: Record<string, string>
