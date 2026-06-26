@@ -20,7 +20,7 @@ export interface RequestAuth {
   apiKeyIn?: 'header' | 'query'
 }
 
-export interface KpRequest {
+export interface PaketRequest {
   method: string
   url: string
   headers: RequestHeader[]
@@ -28,7 +28,7 @@ export interface KpRequest {
   auth: RequestAuth
 }
 
-export interface KpResponse {
+export interface PaketResponse {
   status: number
   statusText: string
   headers: Record<string, string>

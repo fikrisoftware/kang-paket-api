@@ -1,18 +1,18 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import type { KpRequest, KpResponse } from '../types/request'
+import type { PaketRequest, PaketResponse } from '../types/request'
 
 export interface Tab {
   id: string
   name: string
-  request: KpRequest
-  response: KpResponse | null
+  request: PaketRequest
+  response: PaketResponse | null
   isLoading: boolean
   isDirty: boolean
 }
 
-const DEFAULT_REQUEST: KpRequest = {
+const DEFAULT_REQUEST: PaketRequest = {
   method: 'GET',
   url: '',
   headers: [],
@@ -38,7 +38,7 @@ interface TabStore {
   closeTab: (id: string) => void
   setActiveTab: (id: string) => void
   updateTab: (id: string, patch: Partial<Tab>) => void
-  updateRequest: (id: string, patch: Partial<KpRequest>) => void
+  updateRequest: (id: string, patch: Partial<PaketRequest>) => void
 }
 
 export const useTabStore = create<TabStore>()(

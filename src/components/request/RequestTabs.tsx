@@ -2,11 +2,11 @@ import { useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { KeyValueTable, type KVRow } from '../common/KeyValueTable'
-import type { KpRequest, RequestHeader } from '../../types/request'
+import type { PaketRequest, RequestHeader } from '../../types/request'
 
 interface Props {
-  request: KpRequest
-  onUpdate: (patch: Partial<KpRequest>) => void
+  request: PaketRequest
+  onUpdate: (patch: Partial<PaketRequest>) => void
 }
 
 type Tab = 'params' | 'headers' | 'body' | 'auth'

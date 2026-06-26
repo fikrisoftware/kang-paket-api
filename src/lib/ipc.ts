@@ -1,10 +1,10 @@
-import type { KpRequest, KpResponse } from '../types/request'
+import type { PaketRequest, PaketResponse } from '../types/request'
 import type { WorkspaceTree } from '../types/project'
 import type { RequestItem } from '../types/collection'
 import type { HistoryEntry } from '../types/history'
 
 export const ipc = {
-  executeRequest: (req: KpRequest): Promise<KpResponse> =>
+  executeRequest: (req: PaketRequest): Promise<PaketResponse> =>
     window.electronAPI.executeRequest(req),
 
   pickFolder: (): Promise<string | null> =>

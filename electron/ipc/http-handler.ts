@@ -1,8 +1,8 @@
 import { ipcMain } from 'electron'
-import type { KpRequest, KpResponse } from '../../src/types/request'
+import type { PaketRequest, PaketResponse } from '../../src/types/request'
 
 export function registerHttpHandlers(): void {
-  ipcMain.handle('http:execute', async (_event, req: KpRequest): Promise<KpResponse> => {
+  ipcMain.handle('http:execute', async (_event, req: PaketRequest): Promise<PaketResponse> => {
     const start = Date.now()
 
     const headers: Record<string, string> = {}
