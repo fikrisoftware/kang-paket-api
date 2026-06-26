@@ -1,22 +1,32 @@
+import { useState } from 'react'
 import { FolderOpen, Clock, Plus, FolderPlus, Download, Upload } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { useUiStore } from '../../store/uiStore'
 import { useTabStore } from '../../store/tabStore'
 import { MethodBadge } from '../common/MethodBadge'
+import { NewProjectDialog } from '../project/NewProjectDialog'
+import { ipc } from '../../lib/ipc'
 
 export function Sidebar(): JSX.Element {
   const { sidebarPanel, setSidebarPanel } = useUiStore()
   const { workspace, setWorkspace } = useProjectStore()
   const { addTab } = useTabStore()
+  const [showNewProject, setShowNewProject] = useState(false)
 
   async function openProject(): Promise<void> {
-    const result = await window.electronAPI.openProject()
+    const result = await ipc.openProject()
     if (result) setWorkspace(result)
   }
 
   async function importFile(): Promise<void> {
-    const result = await window.electronAPI.importFile()
+    const result = await ipc.importFile()
     if (result) setWorkspace(result)
+  }
+
+  async function handleCreateProject(name: string, dirPath: string): Promise<void> {
+    setShowNewProject(false)
+    const result = await ipc.createProject(dirPath, name)
+    setWorkspace(result)
   }
 
   const collections = useProjectStore((s) => s.getCollections())
@@ -26,6 +36,12 @@ export function Sidebar(): JSX.Element {
       className="flex h-full"
       style={{ background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)' }}
     >
+      {showNewProject && (
+        <NewProjectDialog
+          onClose={() => setShowNewProject(false)}
+          onConfirm={handleCreateProject}
+        />
+      )}
       {/* Icon rail */}
       <div
         className="flex flex-col items-center gap-1 py-2 px-1"
@@ -66,7 +82,10 @@ export function Sidebar(): JSX.Element {
                 <button onClick={importFile} title="Import collection" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
                   <Upload size={13} />
                 </button>
-                <button onClick={openProject} title="Open project" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
+                <button onClick={openProject} title="Buka project" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
+                  <FolderOpen size={13} />
+                </button>
+                <button onClick={() => setShowNewProject(true)} title="Buat project baru" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
                   <FolderPlus size={13} />
                 </button>
               </div>
@@ -78,8 +97,10 @@ export function Sidebar(): JSX.Element {
             {sidebarPanel === 'collections' && (
               <CollectionsPanel
                 collections={collections}
+                projectName={workspace?.meta.name}
                 hasWorkspace={!!workspace}
                 onOpenProject={openProject}
+                onNewProject={() => setShowNewProject(true)}
                 onNewRequest={() => addTab()}
               />
             )}
@@ -93,29 +114,40 @@ export function Sidebar(): JSX.Element {
 
 function CollectionsPanel({
   collections,
+  projectName,
   hasWorkspace,
   onOpenProject,
+  onNewProject,
   onNewRequest
 }: {
   collections: Record<string, import('../../types/collection').RequestItem[]>
+  projectName?: string
   hasWorkspace: boolean
   onOpenProject: () => void
+  onNewProject: () => void
   onNewRequest: () => void
 }): JSX.Element {
   const { addTab } = useTabStore()
 
   if (!hasWorkspace) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 p-4 h-40">
+      <div className="flex flex-col items-center justify-center gap-2 p-4">
         <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
-          Buka project atau import collection untuk memulai.
+          Buka atau buat project untuk mulai menyimpan request.
         </p>
         <button
           onClick={onOpenProject}
-          className="text-xs px-3 py-1.5 rounded transition-opacity hover:opacity-80"
+          className="text-xs px-3 py-1.5 rounded w-full transition-opacity hover:opacity-80"
           style={{ background: 'var(--color-accent)', color: '#fff' }}
         >
           Buka Project
+        </button>
+        <button
+          onClick={onNewProject}
+          className="text-xs px-3 py-1.5 rounded w-full transition-opacity hover:opacity-80"
+          style={{ background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}
+        >
+          Buat Project Baru
         </button>
       </div>
     )
@@ -140,6 +172,17 @@ function CollectionsPanel({
 
   return (
     <div className="py-1">
+      {projectName && (
+        <div
+          className="px-3 py-2 mb-1 flex items-center gap-1.5"
+          style={{ borderBottom: '1px solid var(--color-border)' }}
+        >
+          <FolderOpen size={12} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+          <span className="text-xs font-medium truncate" style={{ color: 'var(--color-text)' }}>
+            {projectName}
+          </span>
+        </div>
+      )}
       {Object.entries(collections).map(([name, requests]) => (
         <div key={name}>
           <div

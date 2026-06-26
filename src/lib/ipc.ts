@@ -7,6 +7,9 @@ export const ipc = {
   executeRequest: (req: NyiruRequest): Promise<NyiruResponse> =>
     window.electronAPI.executeRequest(req),
 
+  pickFolder: (): Promise<string | null> =>
+    window.electronAPI.pickFolder(),
+
   openProject: (): Promise<WorkspaceTree | null> =>
     window.electronAPI.openProject(),
 

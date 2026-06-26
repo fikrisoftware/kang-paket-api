@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('http:execute', req),
 
   // Project / File system
+  pickFolder: (): Promise<string | null> =>
+    ipcRenderer.invoke('fs:pickFolder'),
   openProject: (): Promise<WorkspaceTree | null> =>
     ipcRenderer.invoke('fs:openProject'),
   createProject: (dirPath: string, name: string): Promise<WorkspaceTree> =>
