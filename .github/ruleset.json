@@ -37,7 +37,7 @@
         "strict_required_status_checks_policy": true,
         "required_status_checks": [
           {
-            "context": "typecheck-and-build",
+            "context": "CI / Type Check & Build",
             "integration_id": null
           }
         ]
@@ -62,5 +62,11 @@
       }
     }
   ],
-  "bypass_actors": []
+  "bypass_actors": [
+    {
+      "actor_id": 1,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ]
 }
