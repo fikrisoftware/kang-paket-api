@@ -2,11 +2,11 @@ import { useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { KeyValueTable, type KVRow } from '../common/KeyValueTable'
-import type { NyiruRequest, RequestHeader } from '../../types/request'
+import type { KpRequest, RequestHeader } from '../../types/request'
 
 interface Props {
-  request: NyiruRequest
-  onUpdate: (patch: Partial<NyiruRequest>) => void
+  request: KpRequest
+  onUpdate: (patch: Partial<KpRequest>) => void
 }
 
 type Tab = 'params' | 'headers' | 'body' | 'auth'

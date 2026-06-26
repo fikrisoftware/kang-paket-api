@@ -8,7 +8,7 @@ import { SaveRequestDialog } from './SaveRequestDialog'
 import { useTabStore, useActiveTab } from '../../store/tabStore'
 import { useProjectStore } from '../../store/projectStore'
 import { ipc } from '../../lib/ipc'
-import type { NyiruRequest } from '../../types/request'
+import type { KpRequest } from '../../types/request'
 import type { RequestItem } from '../../types/collection'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -20,7 +20,7 @@ export function RequestPanel(): JSX.Element {
 
   if (!activeTab) return <></>
 
-  function handleUpdate(patch: Partial<NyiruRequest>): void {
+  function handleUpdate(patch: Partial<KpRequest>): void {
     updateRequest(activeTabId, patch)
     if (patch.url !== undefined) {
       const urlName = patch.url.split('?')[0].split('/').pop() || 'New Request'
@@ -53,7 +53,7 @@ export function RequestPanel(): JSX.Element {
     if (!workspace) return
     setShowSave(false)
     const req: RequestItem = {
-      ...(activeTab!.request as NyiruRequest),
+      ...(activeTab!.request as KpRequest),
       id: uuidv4(),
       name,
       collectionName,

@@ -1,12 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { NyiruRequest, NyiruResponse } from '../src/types/request'
+import type { KpRequest, KpResponse } from '../src/types/request'
 import type { ProjectMeta, WorkspaceTree } from '../src/types/project'
 import type { RequestItem } from '../src/types/collection'
 import type { HistoryEntry } from '../src/types/history'
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // HTTP
-  executeRequest: (req: NyiruRequest): Promise<NyiruResponse> =>
+  executeRequest: (req: KpRequest): Promise<KpResponse> =>
     ipcRenderer.invoke('http:execute', req),
 
   // Project / File system

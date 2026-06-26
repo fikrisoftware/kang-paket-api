@@ -2,10 +2,10 @@ import { useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { Copy, Download } from 'lucide-react'
-import type { NyiruResponse } from '../../types/request'
+import type { KpResponse } from '../../types/request'
 
 interface Props {
-  response: NyiruResponse
+  response: KpResponse
 }
 
 type Tab = 'body' | 'headers'
