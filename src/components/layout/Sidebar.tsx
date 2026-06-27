@@ -7,8 +7,11 @@ import { useEnvStore } from '../../store/envStore'
 import { MethodBadge } from '../common/MethodBadge'
 import { NewProjectDialog } from '../project/NewProjectDialog'
 import { ExportDialog } from '../importexport/ExportDialog'
+import { ImportReviewDialog } from '../importexport/ImportReviewDialog'
 import { ipc } from '../../lib/ipc'
 import type { RequestItem } from '../../types/collection'
+import type { Environment } from '../../types/environment'
+import type { WorkspaceTree } from '../../types/project'
 
 export function Sidebar(): JSX.Element {
   const { sidebarPanel, setSidebarPanel } = useUiStore()
@@ -18,6 +21,7 @@ export function Sidebar(): JSX.Element {
   const { addEnvironment, setVariables, environments } = useEnvStore()
   const [showNewProject, setShowNewProject] = useState(false)
   const [showExport, setShowExport] = useState(false)
+  const [importResult, setImportResult] = useState<WorkspaceTree | null>(null)
 
   const collections = useMemo(() => {
     const reqs = workspace?.requests ?? []
@@ -37,12 +41,36 @@ export function Sidebar(): JSX.Element {
   async function importFile(): Promise<void> {
     const result = await ipc.importFile()
     if (!result) return
-    setWorkspace(result)
-    for (const env of result.environments ?? []) {
+    setImportResult(result)
+  }
+
+  function applyEnvironments(envs: Environment[]): void {
+    for (const env of envs) {
       const exists = environments.find((e) => e.name === env.name)
       if (!exists) addEnvironment(env.name)
       setVariables(env.name, env.variables)
     }
+  }
+
+  function handleImportTemp(requests: RequestItem[], envs: Environment[]): void {
+    setImportResult(null)
+    setWorkspace({
+      projectPath: '',
+      meta: { name: 'Imported', version: '1', createdAt: new Date().toISOString() },
+      requests
+    })
+    applyEnvironments(envs)
+  }
+
+  async function handleImportSave(requests: RequestItem[], envs: Environment[], collectionName: string): Promise<void> {
+    if (!workspace?.projectPath) return
+    for (const req of requests) {
+      await ipc.saveRequest(workspace.projectPath, collectionName, { ...req, collectionName })
+    }
+    const updated = await ipc.loadProject(workspace.projectPath)
+    setWorkspace(updated)
+    applyEnvironments(envs)
+    setImportResult(null)
   }
 
   async function handleCreateProject(name: string, dirPath: string): Promise<void> {
@@ -63,6 +91,17 @@ export function Sidebar(): JSX.Element {
         />
       )}
       {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
+      {importResult && (
+        <ImportReviewDialog
+          requests={importResult.requests}
+          environments={importResult.environments ?? []}
+          existingRequests={workspace?.requests ?? []}
+          hasProject={!!workspace?.projectPath}
+          onClose={() => setImportResult(null)}
+          onConfirmTemp={handleImportTemp}
+          onConfirmSave={handleImportSave}
+        />
+      )}
 
       {/* Icon rail */}
       <div
