@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
-import { Copy, Download } from 'lucide-react'
+import { Copy, Download, Clock, Scale } from 'lucide-react'
 import type { PaketResponse } from '../../types/request'
 
 interface Props {
@@ -29,6 +29,28 @@ function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`
+}
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms} ms`
+  return `${(ms / 1000).toFixed(2)} s`
+}
+
+function statusHint(status: number): string {
+  if (status === 0) return 'Gagal / tidak ada koneksi'
+  if (status < 300) return 'Berhasil'
+  if (status < 400) return 'Pengalihan (redirect)'
+  if (status < 500) return 'Kesalahan klien'
+  return 'Kesalahan server'
+}
+
+function Metric({ label, children }: { label: string; children: React.ReactNode }): JSX.Element {
+  return (
+    <div className="flex flex-col gap-0.5" style={{ lineHeight: 1 }}>
+      <span className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>{label}</span>
+      {children}
+    </div>
+  )
 }
 
 export function ResponseViewer({ response }: Props): JSX.Element {
@@ -66,23 +88,36 @@ export function ResponseViewer({ response }: Props): JSX.Element {
     <div className="flex flex-col h-full" style={{ borderTop: '1px solid var(--color-border)' }}>
       {/* Status bar */}
       <div
-        className="flex items-center gap-5 px-4"
+        className="flex items-center gap-6 px-4"
         style={{
-          height: 44,
+          height: 52,
           borderBottom: '1px solid var(--color-border)',
           background: 'var(--color-surface)',
           flexShrink: 0
         }}
       >
-        <span className={`text-sm font-bold font-mono ${statusClass(response.status)}`}>
-          {response.status} {response.statusText}
-        </span>
-        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          {response.durationMs} ms
-        </span>
-        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          {formatSize(response.sizeBytes)}
-        </span>
+        <Metric label="Status">
+          <span
+            className={`text-sm font-bold font-mono ${statusClass(response.status)}`}
+            title={statusHint(response.status)}
+          >
+            {response.status || '—'} {response.statusText}
+          </span>
+        </Metric>
+
+        <Metric label="Waktu">
+          <span className="flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+            <Clock size={12} style={{ color: 'var(--color-text-muted)' }} />
+            {formatDuration(response.durationMs)}
+          </span>
+        </Metric>
+
+        <Metric label="Ukuran">
+          <span className="flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+            <Scale size={12} style={{ color: 'var(--color-text-muted)' }} />
+            {formatSize(response.sizeBytes)}
+          </span>
+        </Metric>
 
         <div className="flex-1" />
 

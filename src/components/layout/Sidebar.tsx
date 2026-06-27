@@ -170,9 +170,9 @@ export function Sidebar(): JSX.Element {
         ))}
       </div>
 
-      {/* Panel content — 224px */}
+      {/* Panel content — isi sisa lebar panel */}
       {sidebarPanel && (
-        <div className="flex flex-col" style={{ width: 224, overflow: 'hidden', flexShrink: 0 }}>
+        <div className="flex flex-col" style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
           {/* Panel header */}
           <div className="flex items-center justify-between px-3 py-2.5" style={{ flexShrink: 0 }}>
             <span
