@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+/* shadcn/ui utility overrides — map Tailwind classes ke CSS variables app */
+.bg-background  { background-color: var(--color-bg) !important; }
+.bg-card        { background-color: var(--color-surface) !important; }
+.bg-popover     { background-color: var(--color-surface) !important; }
+.bg-muted       { background-color: var(--color-border) !important; }
+.bg-secondary   { background-color: var(--color-border) !important; }
+.bg-primary     { background-color: var(--color-accent) !important; }
+.bg-destructive { background-color: #ef4444 !important; }
+.bg-input       { background-color: var(--color-border) !important; }
+
+.text-foreground         { color: var(--color-text) !important; }
+.text-muted-foreground   { color: var(--color-text-muted) !important; }
+.text-primary-foreground { color: #fff !important; }
+.text-card-foreground    { color: var(--color-text) !important; }
+.text-popover-foreground { color: var(--color-text) !important; }
+
+.border-border  { border-color: var(--color-border) !important; }
+.border-input   { border-color: var(--color-border) !important; }
+
+.ring-ring      { --tw-ring-color: var(--color-accent) !important; }
+
+.hover\:bg-accent:hover     { background-color: var(--color-border) !important; }
+.hover\:bg-primary\/90:hover { background-color: var(--color-accent-hover) !important; }
+.hover\:text-accent-foreground:hover { color: var(--color-text) !important; }
+
 /* ── App color tokens ─────────────────────────────────────────── */
 :root {
   --color-bg: #0f1117;
