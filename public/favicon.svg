@@ -1,0 +1,17 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="kpBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#kpBg)"/>
+  <!-- Paket / kotak kiriman 3D -->
+  <g fill="none" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 128 L390 194 V318 L256 384 L122 318 V194 Z"/>
+    <path d="M122 194 L256 260 L390 194"/>
+    <path d="M256 260 V384"/>
+  </g>
+  <!-- Pita/penanda di tutup -->
+  <path d="M189 161 L323 227" stroke="#a7f3d0" stroke-width="18" stroke-linecap="round"/>
+</svg>

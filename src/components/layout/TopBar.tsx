@@ -3,6 +3,7 @@ import { Palette } from 'lucide-react'
 import { useUiStore, THEMES, type Theme } from '../../store/uiStore'
 import { useProjectStore } from '../../store/projectStore'
 import { EnvSelector } from '../environment/EnvSelector'
+import { Logo } from '../common/Logo'
 import { cn } from '../../lib/utils'
 
 export function TopBar(): JSX.Element {
@@ -35,7 +36,8 @@ export function TopBar(): JSX.Element {
         className="flex items-center gap-2"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
-        <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--color-accent)' }}>
+        <span className="flex items-center gap-1.5 font-semibold text-sm tracking-tight" style={{ color: 'var(--color-accent)' }}>
+          <Logo size={17} />
           Kang Paket
         </span>
         {workspace && (
