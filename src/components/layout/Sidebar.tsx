@@ -191,7 +191,7 @@ export function Sidebar(): JSX.Element {
                       className="flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-accent/50"
                       style={{ color: 'var(--color-text-muted)' }}
                     >
-                      <Upload size={13} />
+                      <Download size={13} />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>Import collection</TooltipContent>
@@ -205,7 +205,7 @@ export function Sidebar(): JSX.Element {
                         className="flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-accent/50"
                         style={{ color: 'var(--color-text-muted)' }}
                       >
-                        <Download size={13} />
+                        <Upload size={13} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>Export collection</TooltipContent>

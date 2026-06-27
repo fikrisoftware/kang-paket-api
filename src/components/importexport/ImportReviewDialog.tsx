@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Upload, CheckCircle2, FolderOpen, FolderPlus } from 'lucide-react'
+import { Download, CheckCircle2, FolderOpen, FolderPlus } from 'lucide-react'
 import { MethodBadge } from '../common/MethodBadge'
 import type { RequestItem } from '../../types/collection'
 import type { Environment } from '../../types/environment'
@@ -267,7 +267,7 @@ export function ImportReviewDialog({
             disabled={!selected.length || saving}
             className="flex items-center gap-2 h-9"
           >
-            <Upload size={14} />
+            <Download size={14} />
             {saving ? 'Menyimpan...' : `Import ${selected.length} request`}
           </Button>
         </DialogFooter>

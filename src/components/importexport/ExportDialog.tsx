@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { ipc } from '../../lib/ipc'
 import { useProjectStore } from '../../store/projectStore'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
@@ -84,7 +84,7 @@ export function ExportDialog({ onClose }: Props): JSX.Element {
             disabled={exporting || !requests.length}
             className="flex items-center gap-1.5"
           >
-            <Download size={13} />
+            <Upload size={13} />
             {exporting ? 'Menyimpan...' : 'Export'}
           </Button>
         </DialogFooter>

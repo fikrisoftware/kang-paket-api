@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { KeyValueTable, type KVRow } from '../common/KeyValueTable'
@@ -29,25 +29,6 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
 
   function fromKVRows(rows: KVRow[]): RequestHeader[] {
     return rows.map((r) => ({ key: r.key, value: r.value, enabled: r.enabled }))
-  }
-
-  function getParamRows(): KVRow[] {
-    try {
-      const urlObj = new URL(request.url.startsWith('http') ? request.url : `http://x/${request.url}`)
-      return [...urlObj.searchParams.entries()].map(([key, value]) => ({ key, value, enabled: true }))
-    } catch {
-      return []
-    }
-  }
-
-  function setParamRows(rows: KVRow[]): void {
-    try {
-      const base = request.url.split('?')[0]
-      const params = rows.filter((r) => r.key && r.enabled).map((r) => `${encodeURIComponent(r.key)}=${encodeURIComponent(r.value)}`).join('&')
-      onUpdate({ url: params ? `${base}?${params}` : base })
-    } catch {
-      // ignore malformed URL
-    }
   }
 
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
@@ -100,7 +81,7 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
       <div className="flex-1 overflow-y-auto" style={{ background: 'var(--color-bg)' }}>
         {activeTab === 'params' && (
           <div className="flex flex-col h-full">
-            <KeyValueTable rows={getParamRows()} onChange={setParamRows} keyPlaceholder="param" valuePlaceholder="value" />
+            <ParamsEditor url={request.url} onUrlChange={(url) => onUpdate({ url })} />
           </div>
         )}
 
@@ -285,5 +266,54 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
         )}
       </div>
     </div>
+  )
+}
+
+// ─── Params editor ──────────────────────────────────────────────────────────
+// Query params disimpan di dalam URL, tapi editor butuh state lokal supaya baris
+// kosong (yang baru ditambah) tidak langsung hilang saat diturunkan dari URL.
+
+function parseQueryRows(url: string): KVRow[] {
+  const qs = url.split('?')[1]
+  if (!qs) return []
+  return qs.split('&').filter(Boolean).map((pair) => {
+    const eq = pair.indexOf('=')
+    const rawKey = eq === -1 ? pair : pair.slice(0, eq)
+    const rawVal = eq === -1 ? '' : pair.slice(eq + 1)
+    const dec = (s: string): string => { try { return decodeURIComponent(s) } catch { return s } }
+    return { key: dec(rawKey), value: dec(rawVal), enabled: true }
+  })
+}
+
+function buildUrl(base: string, rows: KVRow[]): string {
+  const q = rows
+    .filter((r) => r.key && r.enabled)
+    .map((r) => `${encodeURIComponent(r.key)}=${encodeURIComponent(r.value)}`)
+    .join('&')
+  return q ? `${base}?${q}` : base
+}
+
+function ParamsEditor({ url, onUrlChange }: { url: string; onUrlChange: (url: string) => void }): JSX.Element {
+  const [rows, setRows] = useState<KVRow[]>(() => parseQueryRows(url))
+  const lastWritten = useRef<string>(url)
+
+  // Re-seed hanya bila URL berubah dari luar editor ini (mis. diketik di URL bar).
+  useEffect(() => {
+    if (url !== lastWritten.current) {
+      setRows(parseQueryRows(url))
+      lastWritten.current = url
+    }
+  }, [url])
+
+  function handleChange(next: KVRow[]): void {
+    setRows(next)
+    const base = url.split('?')[0]
+    const newUrl = buildUrl(base, next)
+    lastWritten.current = newUrl
+    onUrlChange(newUrl)
+  }
+
+  return (
+    <KeyValueTable rows={rows} onChange={handleChange} keyPlaceholder="param" valuePlaceholder="value" />
   )
 }
