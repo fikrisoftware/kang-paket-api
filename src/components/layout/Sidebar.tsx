@@ -29,9 +29,36 @@ export function Sidebar(): JSX.Element {
 
   const tree = useMemo(() => buildTree(workspace?.requests ?? []), [workspace])
 
+  // Workspace sementara = ada isi tapi belum punya folder project di disk.
+  const isTemp = !!workspace && !workspace.projectPath
+
   async function openProject(): Promise<void> {
     const result = await ipc.openProject()
     if (result) setWorkspace(result)
+  }
+
+  async function openRecent(path: string): Promise<void> {
+    const result = await ipc.loadProject(path)
+    setWorkspace(result)
+  }
+
+  // Tulis semua request workspace sementara ke project di disk (mempertahankan groupPath).
+  async function saveTempInto(projectPath: string): Promise<void> {
+    const reqs = workspace?.requests ?? []
+    for (const req of reqs) {
+      const groupPath = req.groupPath?.length
+        ? req.groupPath
+        : req.collectionName ? [req.collectionName] : ['Imported']
+      await ipc.saveRequest(projectPath, groupPath[0], { ...req, groupPath })
+    }
+    setWorkspace(await ipc.loadProject(projectPath))
+  }
+
+  // Simpan workspace sementara ke project yang sudah ada (pilih folder).
+  async function handleSaveTempToExisting(): Promise<void> {
+    const opened = await ipc.openProject()
+    if (!opened) return
+    await saveTempInto(opened.projectPath)
   }
 
   async function importFile(): Promise<void> {
@@ -73,8 +100,13 @@ export function Sidebar(): JSX.Element {
 
   async function handleCreateProject(name: string, dirPath: string): Promise<void> {
     setShowNewProject(false)
-    const result = await ipc.createProject(dirPath, name)
-    setWorkspace(result)
+    await ipc.createProject(dirPath, name)
+    // Jika sedang di workspace sementara, pindahkan isinya ke project baru.
+    if (isTemp) {
+      await saveTempInto(dirPath)
+    } else {
+      setWorkspace(await ipc.loadProject(dirPath))
+    }
   }
 
   return (
@@ -219,14 +251,13 @@ export function Sidebar(): JSX.Element {
                 projectName={workspace?.meta.name}
                 projectPath={workspace?.projectPath}
                 hasWorkspace={!!workspace}
+                isTemp={isTemp}
                 recentPaths={recentPaths}
                 onOpenProject={openProject}
-                onOpenRecent={async (path) => {
-                  const result = await ipc.loadProject(path)
-                  setWorkspace(result)
-                }}
+                onOpenRecent={openRecent}
                 onNewProject={() => setShowNewProject(true)}
                 onNewRequest={() => addTab()}
+                onSaveTempToExisting={handleSaveTempToExisting}
               />
             )}
             {sidebarPanel === 'history' && <HistoryPanel />}
@@ -242,26 +273,26 @@ function CollectionsPanel({
   projectName,
   projectPath,
   hasWorkspace,
+  isTemp,
   recentPaths,
   onOpenProject,
   onOpenRecent,
   onNewProject,
-  onNewRequest
+  onNewRequest,
+  onSaveTempToExisting
 }: {
   tree: TreeNode
   projectName?: string
   projectPath?: string
   hasWorkspace: boolean
+  isTemp: boolean
   recentPaths: string[]
   onOpenProject: () => void
   onOpenRecent: (path: string) => void
   onNewProject: () => void
   onNewRequest: () => void
+  onSaveTempToExisting: () => void
 }): JSX.Element {
-  function projectLabel(path: string): string {
-    return path.replace(/\\/g, '/').split('/').pop() ?? path
-  }
-
   const isEmpty = tree.children.size === 0 && tree.requests.length === 0
 
   if (!hasWorkspace) {
@@ -285,38 +316,11 @@ function CollectionsPanel({
           Buat Project Baru
         </button>
 
-        {/* Recent projects */}
-        {recentPaths.length > 0 && (
+        {recentPaths.length > 0 ? (
           <div className="mt-3">
-            <div
-              className="flex items-center gap-1.5 px-1 pb-1.5 font-semibold uppercase tracking-wider"
-              style={{ fontSize: 10, color: 'var(--color-text-muted)' }}
-            >
-              <History size={10} />
-              Terakhir dibuka
-            </div>
-            {recentPaths.map((path) => (
-              <button
-                key={path}
-                onClick={() => onOpenRecent(path)}
-                className="flex items-center gap-2 w-full px-2 py-2 rounded-md text-left transition-colors hover:bg-[var(--color-border)]"
-                title={path}
-              >
-                <FolderOpen size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
-                <div className="min-w-0">
-                  <div className="text-xs font-medium truncate" style={{ color: 'var(--color-text)' }}>
-                    {projectLabel(path)}
-                  </div>
-                  <div className="text-[10px] truncate" style={{ color: 'var(--color-text-muted)' }}>
-                    {path}
-                  </div>
-                </div>
-              </button>
-            ))}
+            <RecentProjects recentPaths={recentPaths} onOpenRecent={onOpenRecent} defaultOpen />
           </div>
-        )}
-
-        {recentPaths.length === 0 && (
+        ) : (
           <p className="text-xs text-center mt-4 leading-relaxed px-2" style={{ color: 'var(--color-text-muted)' }}>
             Buka atau buat project untuk mulai menyimpan request.
           </p>
@@ -325,7 +329,7 @@ function CollectionsPanel({
     )
   }
 
-  if (isEmpty) {
+  if (isEmpty && !isTemp) {
     return (
       <div className="p-4 flex flex-col gap-3">
         <button
@@ -346,8 +350,41 @@ function CollectionsPanel({
   const rootFolders = [...tree.children.values()].sort((a, b) => a.name.localeCompare(b.name))
 
   return (
-    <div className="py-2">
-      {projectName && (
+    <div className="py-2 flex flex-col h-full">
+      {/* Banner workspace sementara */}
+      {isTemp && (
+        <div
+          className="mx-2 mb-2 p-3 rounded-lg"
+          style={{ background: 'color-mix(in srgb, #fbbf24 12%, transparent)', border: '1px solid color-mix(in srgb, #fbbf24 35%, transparent)' }}
+        >
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#fbbf24' }}>
+              Workspace sementara
+            </span>
+          </div>
+          <p className="text-[11px] leading-relaxed mb-2.5" style={{ color: 'var(--color-text-muted)' }}>
+            Belum tersimpan ke disk — akan hilang saat app ditutup.
+          </p>
+          <div className="flex flex-col gap-1.5">
+            <button
+              onClick={onNewProject}
+              className="flex items-center gap-2 w-full text-xs px-3 py-2 rounded-md transition-opacity hover:opacity-90"
+              style={{ background: 'var(--color-accent)', color: '#fff' }}
+            >
+              <FolderPlus size={13} /> Simpan ke project baru
+            </button>
+            <button
+              onClick={onSaveTempToExisting}
+              className="flex items-center gap-2 w-full text-xs px-3 py-2 rounded-md transition-colors"
+              style={{ color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+            >
+              <FolderOpen size={13} /> Simpan ke project yang ada
+            </button>
+          </div>
+        </div>
+      )}
+
+      {projectName && !isTemp && (
         <>
           <div className="px-3 py-2.5 flex items-center gap-2">
             <FolderOpen size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
@@ -366,13 +403,74 @@ function CollectionsPanel({
         </>
       )}
 
-      {rootFolders.map((node) => (
-        <TreeFolder key={node.name} node={node} depth={0} />
-      ))}
+      <div className="flex-1">
+        {rootFolders.map((node) => (
+          <TreeFolder key={node.name} node={node} depth={0} />
+        ))}
 
-      {/* Request tanpa grup (langsung di root) */}
-      {tree.requests.map((req) => (
-        <RequestRow key={req.id} req={req} depth={0} />
+        {/* Request tanpa grup (langsung di root) */}
+        {tree.requests.map((req) => (
+          <RequestRow key={req.id} req={req} depth={0} />
+        ))}
+
+        {isEmpty && (
+          <p className="text-xs text-center px-3 py-4 leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+            Belum ada request di workspace ini.
+          </p>
+        )}
+      </div>
+
+      {/* Footer: recent projects selalu bisa diakses */}
+      {recentPaths.length > 0 && (
+        <div className="mt-2 px-2 pt-2" style={{ borderTop: '1px solid var(--color-border)' }}>
+          <RecentProjects recentPaths={recentPaths} onOpenRecent={onOpenRecent} defaultOpen={false} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RecentProjects({
+  recentPaths,
+  onOpenRecent,
+  defaultOpen
+}: {
+  recentPaths: string[]
+  onOpenRecent: (path: string) => void
+  defaultOpen: boolean
+}): JSX.Element {
+  const [open, setOpen] = useState(defaultOpen)
+  const projectLabel = (path: string): string => path.replace(/\\/g, '/').split('/').pop() ?? path
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 w-full px-1 pb-1.5 font-semibold uppercase tracking-wider transition-opacity hover:opacity-80"
+        style={{ fontSize: 10, color: 'var(--color-text-muted)' }}
+      >
+        {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+        <History size={11} />
+        <span className="flex-1 text-left">Terakhir dibuka</span>
+        <span className="tabular-nums">{recentPaths.length}</span>
+      </button>
+      {open && recentPaths.map((path) => (
+        <button
+          key={path}
+          onClick={() => onOpenRecent(path)}
+          className="flex items-center gap-2 w-full px-2 py-2 rounded-md text-left transition-colors hover:bg-[var(--color-border)]"
+          title={path}
+        >
+          <FolderOpen size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+          <div className="min-w-0">
+            <div className="text-xs font-medium truncate" style={{ color: 'var(--color-text)' }}>
+              {projectLabel(path)}
+            </div>
+            <div className="text-[10px] truncate" style={{ color: 'var(--color-text-muted)' }}>
+              {path}
+            </div>
+          </div>
+        </button>
       ))}
     </div>
   )
