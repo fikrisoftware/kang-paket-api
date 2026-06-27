@@ -93,11 +93,13 @@ export function RequestPanel(): JSX.Element {
       updateTab(activeTabId, { response, isLoading: false, isDirty: false })
       const entry: HistoryEntry = {
         id: uuidv4(),
-        method: resolvedRequest.method,
-        url: resolvedRequest.url,
+        method: req.method,
+        url: req.url,
         status: response.status,
         durationMs: response.durationMs,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        // Simpan request asli (dengan {{var}}) agar bisa dibuka ulang lengkap.
+        request: req
       }
       ipc.appendHistory(entry).catch(() => {})
     } catch (err) {

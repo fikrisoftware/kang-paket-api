@@ -461,7 +461,7 @@ function CollectionsPanel({
       {/* Footer: recent projects selalu bisa diakses */}
       {recentPaths.length > 0 && (
         <div className="mt-2 px-2 pt-2" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <RecentProjects recentPaths={recentPaths} onOpenRecent={onOpenRecent} defaultOpen={false} />
+          <RecentProjects recentPaths={recentPaths} onOpenRecent={onOpenRecent} defaultOpen />
         </div>
       )}
     </div>
@@ -681,7 +681,7 @@ function HistoryPanel(): JSX.Element {
               key={entry.id}
               onClick={() => addTab({
                 name: `${entry.method} ${entry.url.replace(/^https?:\/\//, '').slice(0, 30)}`,
-                request: { method: entry.method, url: entry.url, headers: [], body: { type: 'none', content: '' }, auth: { type: 'none' } }
+                request: entry.request ?? { method: entry.method, url: entry.url, headers: [], body: { type: 'none', content: '' }, auth: { type: 'none' } }
               })}
               className={cn(
                 'flex items-center gap-2 w-full py-2 px-3 text-xs text-left rounded-md mx-1 transition-colors',
