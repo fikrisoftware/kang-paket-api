@@ -1,6 +1,7 @@
-import { Moon, Sun, Github } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import { useUiStore } from '../../store/uiStore'
 import { useProjectStore } from '../../store/projectStore'
+import { EnvSelector } from '../environment/EnvSelector'
 
 export function TopBar(): JSX.Element {
   const { theme, toggleTheme } = useUiStore()
@@ -37,6 +38,7 @@ export function TopBar(): JSX.Element {
         className="flex items-center gap-2"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
+        <EnvSelector />
         <button
           onClick={toggleTheme}
           title="Toggle theme"

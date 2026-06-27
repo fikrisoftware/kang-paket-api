@@ -90,7 +90,5 @@ export const useTabStore = create<TabStore>()(
   )
 )
 
-export const useActiveTab = (): Tab | undefined => {
-  const { tabs, activeTabId } = useTabStore()
-  return tabs.find((t) => t.id === activeTabId)
-}
+export const useActiveTab = (): Tab | undefined =>
+  useTabStore((s) => s.tabs.find((t) => t.id === s.activeTabId))

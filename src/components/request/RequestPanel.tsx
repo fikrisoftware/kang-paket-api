@@ -7,7 +7,9 @@ import { ResponseViewer } from '../response/ResponseViewer'
 import { SaveRequestDialog } from './SaveRequestDialog'
 import { useTabStore, useActiveTab } from '../../store/tabStore'
 import { useProjectStore } from '../../store/projectStore'
+import { useEnvStore } from '../../store/envStore'
 import { ipc } from '../../lib/ipc'
+import { substituteVars } from '../../lib/envSubstitution'
 import type { PaketRequest } from '../../types/request'
 import type { RequestItem } from '../../types/collection'
 import { v4 as uuidv4 } from 'uuid'
@@ -16,6 +18,7 @@ export function RequestPanel(): JSX.Element {
   const activeTab = useActiveTab()
   const { updateRequest, updateTab, activeTabId } = useTabStore()
   const { workspace, setWorkspace } = useProjectStore()
+  const getActiveVars = useEnvStore((s) => s.getActiveVars)
   const [showSave, setShowSave] = useState(false)
 
   if (!activeTab) return <></>
@@ -32,7 +35,33 @@ export function RequestPanel(): JSX.Element {
     if (!activeTab?.request.url.trim()) return
     updateTab(activeTabId, { isLoading: true, response: null })
     try {
-      const response = await ipc.executeRequest(activeTab.request)
+      const vars = getActiveVars()
+      const req = activeTab.request
+      const resolvedRequest: PaketRequest = {
+        ...req,
+        url: substituteVars(req.url, vars),
+        headers: req.headers.map((h) => ({
+          ...h,
+          key: substituteVars(h.key, vars),
+          value: substituteVars(h.value, vars)
+        })),
+        body: {
+          ...req.body,
+          content: substituteVars(req.body.content, vars),
+          formData: req.body.formData?.map((f) => ({
+            ...f,
+            key: substituteVars(f.key, vars),
+            value: substituteVars(f.value, vars)
+          }))
+        },
+        auth: {
+          ...req.auth,
+          token: req.auth.token ? substituteVars(req.auth.token, vars) : undefined,
+          password: req.auth.password ? substituteVars(req.auth.password, vars) : undefined,
+          apiKeyValue: req.auth.apiKeyValue ? substituteVars(req.auth.apiKeyValue, vars) : undefined
+        }
+      }
+      const response = await ipc.executeRequest(resolvedRequest)
       updateTab(activeTabId, { response, isLoading: false, isDirty: false })
     } catch (err) {
       updateTab(activeTabId, {
@@ -110,24 +139,19 @@ export function RequestPanel(): JSX.Element {
           <RequestTabs request={activeTab.request} onUpdate={handleUpdate} />
         </Panel>
 
-        {activeTab.response && (
-          <>
-            <PanelResizeHandle style={{ height: 4, background: 'var(--color-border)', cursor: 'row-resize' }} />
-            <Panel defaultSize={55} minSize={20}>
-              <ResponseViewer response={activeTab.response} />
-            </Panel>
-          </>
-        )}
+        <PanelResizeHandle style={{ height: 4, background: 'var(--color-border)', cursor: 'row-resize' }} />
 
-        {!activeTab.response && !activeTab.isLoading && (
-          <Panel defaultSize={55} minSize={20}>
+        <Panel defaultSize={55} minSize={20}>
+          {activeTab.response ? (
+            <ResponseViewer response={activeTab.response} />
+          ) : (
             <div className="flex items-center justify-center h-full">
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 Response akan muncul di sini setelah Send.
               </p>
             </div>
-          </Panel>
-        )}
+          )}
+        </Panel>
       </PanelGroup>
     </div>
   )

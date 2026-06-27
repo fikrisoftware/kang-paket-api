@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, Menu } from 'electron'
 import { join } from 'path'
 import { registerHttpHandlers } from './ipc/http-handler'
 import { registerFsHandlers } from './ipc/fs-handler'
@@ -38,6 +38,8 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null)
+
   registerHttpHandlers()
   registerFsHandlers()
   registerHistoryHandlers()

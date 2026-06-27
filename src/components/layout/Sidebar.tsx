@@ -1,17 +1,29 @@
-import { useState } from 'react'
-import { FolderOpen, Clock, Plus, FolderPlus, Download, Upload } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { FolderOpen, Clock, Plus, FolderPlus, Upload } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { useUiStore } from '../../store/uiStore'
 import { useTabStore } from '../../store/tabStore'
 import { MethodBadge } from '../common/MethodBadge'
 import { NewProjectDialog } from '../project/NewProjectDialog'
 import { ipc } from '../../lib/ipc'
+import type { RequestItem } from '../../types/collection'
 
 export function Sidebar(): JSX.Element {
   const { sidebarPanel, setSidebarPanel } = useUiStore()
-  const { workspace, setWorkspace } = useProjectStore()
+  const workspace = useProjectStore((s) => s.workspace)
+  const { setWorkspace } = useProjectStore()
   const { addTab } = useTabStore()
   const [showNewProject, setShowNewProject] = useState(false)
+
+  const collections = useMemo(() => {
+    const reqs = workspace?.requests ?? []
+    return reqs.reduce<Record<string, RequestItem[]>>((acc, r) => {
+      const key = r.collectionName ?? 'Default'
+      if (!acc[key]) acc[key] = []
+      acc[key].push(r)
+      return acc
+    }, {})
+  }, [workspace])
 
   async function openProject(): Promise<void> {
     const result = await ipc.openProject()
@@ -29,8 +41,6 @@ export function Sidebar(): JSX.Element {
     setWorkspace(result)
   }
 
-  const collections = useProjectStore((s) => s.getCollections())
-
   return (
     <div
       className="flex h-full"
@@ -42,6 +52,7 @@ export function Sidebar(): JSX.Element {
           onConfirm={handleCreateProject}
         />
       )}
+
       {/* Icon rail */}
       <div
         className="flex flex-col items-center gap-1 py-2 px-1"
@@ -120,7 +131,7 @@ function CollectionsPanel({
   onNewProject,
   onNewRequest
 }: {
-  collections: Record<string, import('../../types/collection').RequestItem[]>
+  collections: Record<string, RequestItem[]>
   projectName?: string
   hasWorkspace: boolean
   onOpenProject: () => void
@@ -185,10 +196,7 @@ function CollectionsPanel({
       )}
       {Object.entries(collections).map(([name, requests]) => (
         <div key={name}>
-          <div
-            className="px-3 py-1.5 text-xs font-semibold"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
+          <div className="px-3 py-1.5 text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>
             {name}
           </div>
           {requests.map((req) => (
