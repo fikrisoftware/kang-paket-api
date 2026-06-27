@@ -13,6 +13,7 @@ import { substituteVars } from '../../lib/envSubstitution'
 import type { PaketRequest } from '../../types/request'
 import type { RequestItem } from '../../types/collection'
 import { v4 as uuidv4 } from 'uuid'
+import type { HistoryEntry } from '../../types/history'
 
 export function RequestPanel(): JSX.Element {
   const activeTab = useActiveTab()
@@ -63,6 +64,15 @@ export function RequestPanel(): JSX.Element {
       }
       const response = await ipc.executeRequest(resolvedRequest)
       updateTab(activeTabId, { response, isLoading: false, isDirty: false })
+      const entry: HistoryEntry = {
+        id: uuidv4(),
+        method: resolvedRequest.method,
+        url: resolvedRequest.url,
+        status: response.status,
+        durationMs: response.durationMs,
+        timestamp: new Date().toISOString()
+      }
+      ipc.appendHistory(entry).catch(() => {})
     } catch (err) {
       updateTab(activeTabId, {
         isLoading: false,

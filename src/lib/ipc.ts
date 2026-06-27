@@ -28,6 +28,9 @@ export const ipc = {
   getHistory: (): Promise<HistoryEntry[]> =>
     window.electronAPI.getHistory(),
 
+  appendHistory: (entry: HistoryEntry): Promise<void> =>
+    window.electronAPI.appendHistory(entry),
+
   clearHistory: (): Promise<void> =>
     window.electronAPI.clearHistory(),
 

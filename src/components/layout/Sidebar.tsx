@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { FolderOpen, Clock, Plus, FolderPlus, Upload, Download } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { useUiStore } from '../../store/uiStore'
@@ -280,12 +280,97 @@ function CollectionsPanel({
   )
 }
 
+function statusColor(status: number): string {
+  if (status === 0) return 'var(--color-text-muted)'
+  if (status < 300) return '#10b981'
+  if (status < 400) return '#3b82f6'
+  if (status < 500) return '#f59e0b'
+  return '#ef4444'
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (d.toDateString() === today.toDateString()) return 'Hari ini'
+  if (d.toDateString() === yesterday.toDateString()) return 'Kemarin'
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+}
+
 function HistoryPanel(): JSX.Element {
+  const { addTab } = useTabStore()
+  const [entries, setEntries] = useState<import('../../types/history').HistoryEntry[]>([])
+
+  useEffect(() => {
+    ipc.getHistory().then(setEntries).catch(() => {})
+  }, [])
+
+  async function clearAll(): Promise<void> {
+    await ipc.clearHistory()
+    setEntries([])
+  }
+
+  if (entries.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-24">
+        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Belum ada history.</p>
+      </div>
+    )
+  }
+
+  // Group by date
+  const groups: Record<string, typeof entries> = {}
+  for (const e of entries) {
+    const key = formatDate(e.timestamp)
+    if (!groups[key]) groups[key] = []
+    groups[key].push(e)
+  }
+
   return (
-    <div className="flex items-center justify-center h-24">
-      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-        Belum ada history.
-      </p>
+    <div className="py-1">
+      <div className="flex justify-end px-3 pb-1">
+        <button
+          onClick={clearAll}
+          className="text-xs hover:opacity-70 transition-opacity"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Hapus semua
+        </button>
+      </div>
+      {Object.entries(groups).map(([date, items]) => (
+        <div key={date}>
+          <div className="px-3 py-1.5 text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>
+            {date}
+          </div>
+          {items.map((entry) => (
+            <button
+              key={entry.id}
+              onClick={() => addTab({
+                name: `${entry.method} ${entry.url.replace(/^https?:\/\//, '').slice(0, 30)}`,
+                request: { method: entry.method, url: entry.url, headers: [], body: { type: 'none', content: '' }, auth: { type: 'none' } }
+              })}
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left hover:opacity-80 transition-opacity"
+              style={{ color: 'var(--color-text)' }}
+            >
+              <MethodBadge method={entry.method} />
+              <span className="flex-1 truncate" style={{ color: 'var(--color-text-muted)' }}>
+                {entry.url.replace(/^https?:\/\//, '')}
+              </span>
+              <span style={{ color: statusColor(entry.status), flexShrink: 0 }}>
+                {entry.status || '—'}
+              </span>
+              <span style={{ color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                {formatTime(entry.timestamp)}
+              </span>
+            </button>
+          ))}
+        </div>
+      ))}
     </div>
   )
 }

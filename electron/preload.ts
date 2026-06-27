@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // History
   getHistory: (): Promise<HistoryEntry[]> =>
     ipcRenderer.invoke('history:get'),
+  appendHistory: (entry: HistoryEntry): Promise<void> =>
+    ipcRenderer.invoke('history:append', entry),
   clearHistory: (): Promise<void> =>
     ipcRenderer.invoke('history:clear'),
 
