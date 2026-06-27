@@ -511,13 +511,10 @@ function buildTree(requests: RequestItem[]): TreeNode {
 }
 
 function RequestRow({ req, depth }: { req: RequestItem; depth: number }): JSX.Element {
-  const { addTab } = useTabStore()
+  const openSavedRequest = useTabStore((s) => s.openSavedRequest)
   return (
     <button
-      onClick={() => addTab({
-        name: req.name,
-        request: { method: req.method, url: req.url, headers: req.headers, body: req.body, auth: req.auth }
-      })}
+      onClick={() => openSavedRequest(req)}
       className="flex items-center gap-2 w-full py-1.5 pr-3 text-xs text-left rounded-md transition-colors hover:bg-accent/50"
       style={{ color: 'var(--color-text)', paddingLeft: 12 + depth * 14 }}
     >

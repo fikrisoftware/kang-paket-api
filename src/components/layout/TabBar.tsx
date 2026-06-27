@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Plus, X } from 'lucide-react'
 import { useTabStore } from '../../store/tabStore'
 import { MethodBadge } from '../common/MethodBadge'
@@ -5,6 +6,22 @@ import { cn } from '../../lib/utils'
 
 export function TabBar(): JSX.Element {
   const { tabs, activeTabId, addTab, closeTab, setActiveTab } = useTabStore()
+
+  // Shortcut: Ctrl/Cmd+T tab baru, Ctrl/Cmd+W tutup tab aktif.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent): void {
+      const mod = e.ctrlKey || e.metaKey
+      if (mod && e.key.toLowerCase() === 't') {
+        e.preventDefault()
+        addTab()
+      } else if (mod && e.key.toLowerCase() === 'w') {
+        e.preventDefault()
+        closeTab(activeTabId)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [addTab, closeTab, activeTabId])
 
   return (
     <div

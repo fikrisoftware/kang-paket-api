@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 import type { PaketRequest, PaketResponse } from '../types/request'
+import type { RequestItem } from '../types/collection'
 
 export interface Tab {
   id: string
@@ -10,6 +11,12 @@ export interface Tab {
   response: PaketResponse | null
   isLoading: boolean
   isDirty: boolean
+  /** Identitas request tersimpan di disk — terisi jika tab ini terhubung
+   *  ke sebuah .kp.json, sehingga "Simpan" meng-update file yang sama. */
+  savedId?: string
+  filePath?: string
+  collectionName?: string
+  groupPath?: string[]
 }
 
 const DEFAULT_REQUEST: PaketRequest = {
@@ -35,6 +42,7 @@ interface TabStore {
   tabs: Tab[]
   activeTabId: string
   addTab: (partial?: Partial<Tab>) => string
+  openSavedRequest: (item: RequestItem) => string
   closeTab: (id: string) => void
   setActiveTab: (id: string) => void
   updateTab: (id: string, patch: Partial<Tab>) => void
@@ -51,6 +59,32 @@ export const useTabStore = create<TabStore>()(
 
         addTab: (partial) => {
           const tab = { ...newTab(), ...partial }
+          set((s) => ({ tabs: [...s.tabs, tab], activeTabId: tab.id }))
+          return tab.id
+        },
+
+        openSavedRequest: (item) => {
+          // Jika sudah ada tab untuk request ini, aktifkan saja (hindari duplikat).
+          const existing = get().tabs.find((t) => t.savedId === item.id)
+          if (existing) {
+            set({ activeTabId: existing.id })
+            return existing.id
+          }
+          const tab: Tab = {
+            ...newTab(item.name),
+            name: item.name,
+            request: {
+              method: item.method,
+              url: item.url,
+              headers: item.headers,
+              body: item.body,
+              auth: item.auth
+            },
+            savedId: item.id,
+            filePath: item.filePath,
+            collectionName: item.collectionName,
+            groupPath: item.groupPath
+          }
           set((s) => ({ tabs: [...s.tabs, tab], activeTabId: tab.id }))
           return tab.id
         },

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Save } from 'lucide-react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { UrlBar } from './UrlBar'
@@ -22,11 +22,31 @@ export function RequestPanel(): JSX.Element {
   const getActiveVars = useEnvStore((s) => s.getActiveVars)
   const [showSave, setShowSave] = useState(false)
 
+  // Shortcut: Ctrl/Cmd+S simpan, Ctrl/Cmd+Enter kirim. (Dipasang sebelum early-return
+  // agar urutan hooks selalu konsisten.)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent): void {
+      const mod = e.ctrlKey || e.metaKey
+      if (mod && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        handleSaveClick()
+      } else if (mod && e.key === 'Enter') {
+        e.preventDefault()
+        void handleSend()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, workspace])
+
   if (!activeTab) return <></>
 
   function handleUpdate(patch: Partial<PaketRequest>): void {
     updateRequest(activeTabId, patch)
-    if (patch.url !== undefined) {
+    // Auto-rename dari URL hanya untuk request baru (belum tersimpan), supaya
+    // nama request yang sudah disimpan tidak tertimpa saat mengedit URL.
+    if (patch.url !== undefined && !activeTab?.savedId) {
       const urlName = patch.url.split('?')[0].split('/').pop() || 'New Request'
       if (urlName) updateTab(activeTabId, { name: urlName })
     }
@@ -88,29 +108,71 @@ export function RequestPanel(): JSX.Element {
     }
   }
 
-  async function handleSave(name: string, collectionName: string): Promise<void> {
-    if (!workspace) return
+  // Update file .kp.json yang sama (request yang sudah terhubung ke disk).
+  async function saveInPlace(): Promise<void> {
+    if (!workspace?.projectPath || !activeTab?.savedId) return
+    const existing = workspace.requests.find((r) => r.id === activeTab.savedId)
+    const collectionName = activeTab.collectionName ?? activeTab.groupPath?.[0] ?? 'Default'
+    const req: RequestItem = {
+      ...activeTab.request,
+      id: activeTab.savedId,
+      name: activeTab.name,
+      collectionName,
+      groupPath: activeTab.groupPath,
+      filePath: activeTab.filePath,
+      meta: { createdAt: existing?.meta.createdAt ?? new Date().toISOString() }
+    }
+    await ipc.saveRequest(workspace.projectPath, collectionName, req)
+    setWorkspace(await ipc.loadProject(workspace.projectPath))
+    updateTab(activeTabId, { isDirty: false })
+  }
+
+  // Simpan request baru (atau "save as") via dialog: pilih nama & collection.
+  async function handleSaveDialog(name: string, collectionName: string): Promise<void> {
+    if (!workspace?.projectPath) return
     setShowSave(false)
+    const id = uuidv4()
+    const groupPath = [collectionName]
     const req: RequestItem = {
       ...(activeTab!.request as PaketRequest),
-      id: uuidv4(),
+      id,
       name,
       collectionName,
+      groupPath,
       meta: { createdAt: new Date().toISOString() }
     }
     await ipc.saveRequest(workspace.projectPath, collectionName, req)
     const updated = await ipc.loadProject(workspace.projectPath)
     setWorkspace(updated)
-    updateTab(activeTabId, { name, isDirty: false })
+    const saved = updated.requests.find((r) => r.id === id)
+    // Hubungkan tab ini ke request yang baru disimpan agar Simpan berikutnya update di tempat.
+    updateTab(activeTabId, {
+      name,
+      isDirty: false,
+      savedId: id,
+      filePath: saved?.filePath,
+      collectionName,
+      groupPath
+    })
   }
+
+  // Tombol/Ctrl+S: kalau tab sudah terhubung → update di tempat; kalau belum → dialog.
+  function handleSaveClick(): void {
+    if (!workspace?.projectPath) return
+    if (activeTab?.savedId) void saveInPlace()
+    else setShowSave(true)
+  }
+
+  const canSave = !!workspace?.projectPath
+  const isLinked = !!activeTab?.savedId
 
   return (
     <div className="flex flex-col h-full">
-      {showSave && workspace && (
+      {showSave && canSave && (
         <SaveRequestDialog
           defaultName={activeTab?.name ?? 'New Request'}
           onClose={() => setShowSave(false)}
-          onConfirm={handleSave}
+          onConfirm={handleSaveDialog}
         />
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
@@ -124,22 +186,26 @@ export function RequestPanel(): JSX.Element {
             onSend={handleSend}
           />
         </div>
-        {workspace && (
+        {canSave && (
           <button
-            onClick={() => setShowSave(true)}
-            title="Simpan request ke collection"
+            onClick={handleSaveClick}
+            title={isLinked ? 'Simpan perubahan (Ctrl+S)' : 'Simpan request ke collection (Ctrl+S)'}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '0 18px', height: 52, fontSize: 13, cursor: 'pointer',
-              background: 'transparent', color: 'var(--color-text-muted)',
+              background: 'transparent',
+              color: activeTab.isDirty ? 'var(--color-accent)' : 'var(--color-text-muted)',
               border: '0', borderLeft: '1px solid var(--color-border)',
               transition: 'color 0.15s', flexShrink: 0
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = activeTab.isDirty ? 'var(--color-accent)' : 'var(--color-text-muted)')}
           >
             <Save size={15} />
-            <span>Simpan</span>
+            <span>{isLinked ? 'Simpan' : 'Simpan ke…'}</span>
+            {activeTab.isDirty && (
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-accent)' }} />
+            )}
           </button>
         )}
       </div>
