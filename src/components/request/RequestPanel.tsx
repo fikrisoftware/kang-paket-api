@@ -14,6 +14,7 @@ import type { PaketRequest } from '../../types/request'
 import type { RequestItem } from '../../types/collection'
 import { v4 as uuidv4 } from 'uuid'
 import type { HistoryEntry } from '../../types/history'
+import { toast } from '../../store/toastStore'
 
 export function RequestPanel(): JSX.Element {
   const activeTab = useActiveTab()
@@ -100,17 +101,19 @@ export function RequestPanel(): JSX.Element {
       }
       ipc.appendHistory(entry).catch(() => {})
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
       updateTab(activeTabId, {
         isLoading: false,
         response: {
           status: 0,
           statusText: 'Error',
           headers: {},
-          body: err instanceof Error ? err.message : 'Unknown error',
+          body: msg,
           durationMs: 0,
           sizeBytes: 0
         }
       })
+      toast.error(`Request gagal: ${msg}`)
     }
   }
 
@@ -128,10 +131,15 @@ export function RequestPanel(): JSX.Element {
       filePath: activeTab.filePath,
       meta: { createdAt: existing?.meta.createdAt ?? new Date().toISOString() }
     }
-    await ipc.saveRequest(workspace.projectPath, collectionName, req)
-    setWorkspace(await ipc.loadProject(workspace.projectPath))
-    updateTab(activeTabId, { isDirty: false })
-    flashSaved()
+    try {
+      await ipc.saveRequest(workspace.projectPath, collectionName, req)
+      setWorkspace(await ipc.loadProject(workspace.projectPath))
+      updateTab(activeTabId, { isDirty: false })
+      flashSaved()
+      toast.success(`Request "${activeTab.name}" tersimpan`)
+    } catch (err) {
+      toast.error(`Gagal menyimpan: ${err instanceof Error ? err.message : 'error'}`)
+    }
   }
 
   // Simpan request baru (atau "save as") via dialog: pilih nama & collection.
@@ -148,20 +156,25 @@ export function RequestPanel(): JSX.Element {
       groupPath,
       meta: { createdAt: new Date().toISOString() }
     }
-    await ipc.saveRequest(workspace.projectPath, collectionName, req)
-    const updated = await ipc.loadProject(workspace.projectPath)
-    setWorkspace(updated)
-    const saved = updated.requests.find((r) => r.id === id)
-    // Hubungkan tab ini ke request yang baru disimpan agar Simpan berikutnya update di tempat.
-    updateTab(activeTabId, {
-      name,
-      isDirty: false,
-      savedId: id,
-      filePath: saved?.filePath,
-      collectionName,
-      groupPath
-    })
-    flashSaved()
+    try {
+      await ipc.saveRequest(workspace.projectPath, collectionName, req)
+      const updated = await ipc.loadProject(workspace.projectPath)
+      setWorkspace(updated)
+      const saved = updated.requests.find((r) => r.id === id)
+      // Hubungkan tab ini ke request yang baru disimpan agar Simpan berikutnya update di tempat.
+      updateTab(activeTabId, {
+        name,
+        isDirty: false,
+        savedId: id,
+        filePath: saved?.filePath,
+        collectionName,
+        groupPath
+      })
+      flashSaved()
+      toast.success(`Request "${name}" disimpan ke ${collectionName}`)
+    } catch (err) {
+      toast.error(`Gagal menyimpan: ${err instanceof Error ? err.message : 'error'}`)
+    }
   }
 
   // Tombol/Ctrl+S: kalau tab sudah terhubung → update di tempat; kalau belum → dialog.

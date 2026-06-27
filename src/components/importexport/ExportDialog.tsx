@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Upload } from 'lucide-react'
 import { ipc } from '../../lib/ipc'
 import { useProjectStore } from '../../store/projectStore'
+import { toast } from '../../store/toastStore'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
 import { Button } from '../ui/button'
 
@@ -27,6 +28,9 @@ export function ExportDialog({ onClose }: Props): JSX.Element {
     setExporting(true)
     try {
       await ipc.exportCollection(requests, format)
+      toast.success(`${requests.length} request di-export (${format})`)
+    } catch (err) {
+      toast.error(`Gagal export: ${err instanceof Error ? err.message : 'error'}`)
     } finally {
       setExporting(false)
       onClose()

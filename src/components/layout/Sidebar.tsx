@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { Separator } from '../ui/separator'
 import { cn } from '../../lib/utils'
 import { ipc } from '../../lib/ipc'
+import { toast } from '../../store/toastStore'
 import type { RequestItem } from '../../types/collection'
 import type { Environment } from '../../types/environment'
 import type { WorkspaceTree } from '../../types/project'
@@ -33,25 +34,42 @@ export function Sidebar(): JSX.Element {
   const isTemp = !!workspace && !workspace.projectPath
 
   async function openProject(): Promise<void> {
-    const result = await ipc.openProject()
-    if (result) setWorkspace(result)
+    try {
+      const result = await ipc.openProject()
+      if (result) {
+        setWorkspace(result)
+        toast.success(`Project "${result.meta.name}" dibuka`)
+      }
+    } catch (err) {
+      toast.error(`Gagal membuka project: ${err instanceof Error ? err.message : 'error'}`)
+    }
   }
 
   async function openRecent(path: string): Promise<void> {
-    const result = await ipc.loadProject(path)
-    setWorkspace(result)
+    try {
+      const result = await ipc.loadProject(path)
+      setWorkspace(result)
+      toast.success(`Project "${result.meta.name}" dibuka`)
+    } catch (err) {
+      toast.error(`Gagal membuka project: ${err instanceof Error ? err.message : 'error'}`)
+    }
   }
 
   // Tulis semua request workspace sementara ke project di disk (mempertahankan groupPath).
   async function saveTempInto(projectPath: string): Promise<void> {
     const reqs = workspace?.requests ?? []
-    for (const req of reqs) {
-      const groupPath = req.groupPath?.length
-        ? req.groupPath
-        : req.collectionName ? [req.collectionName] : ['Imported']
-      await ipc.saveRequest(projectPath, groupPath[0], { ...req, groupPath })
+    try {
+      for (const req of reqs) {
+        const groupPath = req.groupPath?.length
+          ? req.groupPath
+          : req.collectionName ? [req.collectionName] : ['Imported']
+        await ipc.saveRequest(projectPath, groupPath[0], { ...req, groupPath })
+      }
+      setWorkspace(await ipc.loadProject(projectPath))
+      toast.success(`${reqs.length} request disimpan ke project`)
+    } catch (err) {
+      toast.error(`Gagal menyimpan ke project: ${err instanceof Error ? err.message : 'error'}`)
     }
-    setWorkspace(await ipc.loadProject(projectPath))
   }
 
   // Simpan workspace sementara ke project yang sudah ada (pilih folder).
@@ -62,9 +80,17 @@ export function Sidebar(): JSX.Element {
   }
 
   async function importFile(): Promise<void> {
-    const result = await ipc.importFile()
-    if (!result) return
-    setImportResult(result)
+    try {
+      const result = await ipc.importFile()
+      if (!result) return
+      if (!result.requests.length) {
+        toast.error('Tidak ada request yang bisa diimport dari file ini')
+        return
+      }
+      setImportResult(result)
+    } catch (err) {
+      toast.error(`Gagal mengimport: ${err instanceof Error ? err.message : 'error'}`)
+    }
   }
 
   function applyEnvironments(envs: Environment[]): void {
@@ -83,29 +109,41 @@ export function Sidebar(): JSX.Element {
       requests
     })
     applyEnvironments(envs)
+    toast.success(`${requests.length} request dibuka sementara${envs.length ? ` · ${envs.length} environment` : ''}`)
   }
 
   async function handleImportSave(requests: RequestItem[], envs: Environment[], collectionName: string): Promise<void> {
     if (!workspace?.projectPath) return
-    for (const req of requests) {
-      // Nama collection pilihan jadi root, hierarki folder asal dinest di bawahnya.
-      const groupPath = req.groupPath?.length ? [collectionName, ...req.groupPath] : [collectionName]
-      await ipc.saveRequest(workspace.projectPath, collectionName, { ...req, collectionName, groupPath })
+    try {
+      for (const req of requests) {
+        // Nama collection pilihan jadi root, hierarki folder asal dinest di bawahnya.
+        const groupPath = req.groupPath?.length ? [collectionName, ...req.groupPath] : [collectionName]
+        await ipc.saveRequest(workspace.projectPath, collectionName, { ...req, collectionName, groupPath })
+      }
+      const updated = await ipc.loadProject(workspace.projectPath)
+      setWorkspace(updated)
+      applyEnvironments(envs)
+      toast.success(`${requests.length} request diimport ke "${collectionName}"`)
+    } catch (err) {
+      toast.error(`Gagal import: ${err instanceof Error ? err.message : 'error'}`)
+      return
     }
-    const updated = await ipc.loadProject(workspace.projectPath)
-    setWorkspace(updated)
-    applyEnvironments(envs)
     setImportResult(null)
   }
 
   async function handleCreateProject(name: string, dirPath: string): Promise<void> {
     setShowNewProject(false)
-    await ipc.createProject(dirPath, name)
-    // Jika sedang di workspace sementara, pindahkan isinya ke project baru.
-    if (isTemp) {
-      await saveTempInto(dirPath)
-    } else {
-      setWorkspace(await ipc.loadProject(dirPath))
+    try {
+      await ipc.createProject(dirPath, name)
+      toast.success(`Project "${name}" dibuat`)
+      // Jika sedang di workspace sementara, pindahkan isinya ke project baru.
+      if (isTemp) {
+        await saveTempInto(dirPath)
+      } else {
+        setWorkspace(await ipc.loadProject(dirPath))
+      }
+    } catch (err) {
+      toast.error(`Gagal membuat project: ${err instanceof Error ? err.message : 'error'}`)
     }
   }
 
@@ -597,6 +635,7 @@ function HistoryPanel(): JSX.Element {
   async function clearAll(): Promise<void> {
     await ipc.clearHistory()
     setEntries([])
+    toast.info('History dihapus')
   }
 
   if (entries.length === 0) {

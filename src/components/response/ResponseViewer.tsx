@@ -4,6 +4,7 @@ import { json } from '@codemirror/lang-json'
 import { Copy, Download, Clock, Scale, Filter, X } from 'lucide-react'
 import type { PaketResponse } from '../../types/request'
 import { applyJsonPath } from '../../lib/filter'
+import { toast } from '../../store/toastStore'
 
 interface Props {
   response: PaketResponse
@@ -74,6 +75,8 @@ export function ResponseViewer({ response }: Props): JSX.Element {
 
   function copyBody(): void {
     navigator.clipboard.writeText(displayBody)
+      .then(() => toast.success('Response disalin ke clipboard'))
+      .catch(() => toast.error('Gagal menyalin response'))
   }
 
   function downloadBody(): void {
@@ -83,6 +86,7 @@ export function ResponseViewer({ response }: Props): JSX.Element {
     a.href = URL.createObjectURL(blob)
     a.download = `response.${ext}`
     a.click()
+    toast.success(`Response diunduh sebagai response.${ext}`)
   }
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
