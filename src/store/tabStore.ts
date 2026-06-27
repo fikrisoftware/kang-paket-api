@@ -85,7 +85,7 @@ export const useTabStore = create<TabStore>()(
     },
     {
       name: 'kp-tabs',
-      partialState: (s: TabStore) => ({ tabs: s.tabs, activeTabId: s.activeTabId })
+      partialize: (s: TabStore) => ({ tabs: s.tabs, activeTabId: s.activeTabId })
     } as Parameters<typeof persist>[1]
   )
 )

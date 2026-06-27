@@ -210,7 +210,16 @@ function CollectionsPanel({
           {requests.map((req) => (
             <button
               key={req.id}
-              onClick={() => addTab({ name: req.name, request: req })}
+              onClick={() => addTab({
+                name: req.name,
+                request: {
+                  method: req.method,
+                  url: req.url,
+                  headers: req.headers,
+                  body: req.body,
+                  auth: req.auth
+                }
+              })}
               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left hover:opacity-80 transition-opacity"
               style={{ color: 'var(--color-text)' }}
             >

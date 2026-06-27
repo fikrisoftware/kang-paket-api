@@ -89,13 +89,14 @@ function parseBruLine(content: string): RequestItem {
 }
 
 export function registerImportHandlers(): void {
-  ipcMain.handle('import:openAndParse', async (): Promise<WorkspaceTree | null> => {
+  ipcMain.handle('import:openAndParse', async (event): Promise<WorkspaceTree | null> => {
     const result = await dialog.showOpenDialog({
       filters: [
         { name: 'API Collections', extensions: ['json', 'yaml', 'yml', 'bru'] }
       ],
       properties: ['openFile']
     })
+    event.sender.getOwnerBrowserWindow()?.focus()
     if (result.canceled || !result.filePaths[0]) return null
 
     const filePath = result.filePaths[0]
