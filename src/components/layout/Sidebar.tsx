@@ -104,6 +104,8 @@ export function Sidebar(): JSX.Element {
           onClose={() => setImportResult(null)}
           onConfirmTemp={handleImportTemp}
           onConfirmSave={handleImportSave}
+          onOpenProject={openProject}
+          onNewProject={() => { setImportResult(null); setShowNewProject(true) }}
         />
       )}
 
