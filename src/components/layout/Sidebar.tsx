@@ -3,6 +3,7 @@ import { FolderOpen, Clock, Plus, FolderPlus, Upload, Download } from 'lucide-re
 import { useProjectStore } from '../../store/projectStore'
 import { useUiStore } from '../../store/uiStore'
 import { useTabStore } from '../../store/tabStore'
+import { useEnvStore } from '../../store/envStore'
 import { MethodBadge } from '../common/MethodBadge'
 import { NewProjectDialog } from '../project/NewProjectDialog'
 import { ExportDialog } from '../importexport/ExportDialog'
@@ -14,6 +15,7 @@ export function Sidebar(): JSX.Element {
   const workspace = useProjectStore((s) => s.workspace)
   const { setWorkspace } = useProjectStore()
   const { addTab } = useTabStore()
+  const { addEnvironment, setVariables, environments } = useEnvStore()
   const [showNewProject, setShowNewProject] = useState(false)
   const [showExport, setShowExport] = useState(false)
 
@@ -34,7 +36,13 @@ export function Sidebar(): JSX.Element {
 
   async function importFile(): Promise<void> {
     const result = await ipc.importFile()
-    if (result) setWorkspace(result)
+    if (!result) return
+    setWorkspace(result)
+    for (const env of result.environments ?? []) {
+      const exists = environments.find((e) => e.name === env.name)
+      if (!exists) addEnvironment(env.name)
+      setVariables(env.name, env.variables)
+    }
   }
 
   async function handleCreateProject(name: string, dirPath: string): Promise<void> {
