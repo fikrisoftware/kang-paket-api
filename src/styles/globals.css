@@ -208,11 +208,11 @@
   --ring: 38 92% 50%;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* NOTE: Jangan tambahkan `* { padding: 0; margin: 0 }` di sini.
+   Di Tailwind v4 semua utility (px-*, py-*, p-*) ada di dalam @layer,
+   dan CSS tanpa layer SELALU menang atas CSS ber-layer — reset unlayered
+   itu akan menghapus semua padding utility di seluruh app.
+   Preflight Tailwind sudah menangani box-sizing & reset margin. */
 
 html, body, #root {
   height: 100%;
