@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Download } from 'lucide-react'
 import { ipc } from '../../lib/ipc'
 import { useProjectStore } from '../../store/projectStore'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
+import { Button } from '../ui/button'
 
 interface Props {
   onClose: () => void
@@ -31,83 +33,62 @@ export function ExportDialog({ onClose }: Props): JSX.Element {
     }
   }
 
-  const overlayStyle: React.CSSProperties = {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50
-  }
-
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div
-        style={{
-          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-          borderRadius: 8, padding: 24, width: 380,
-          display: 'flex', flexDirection: 'column', gap: 16
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)' }}>Export Collection</h2>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>Export Collection</DialogTitle>
+        </DialogHeader>
 
-        <p style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
-          {requests.length} request akan di-export.
-        </p>
+        <div className="space-y-4">
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            {requests.length} request akan di-export.
+          </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>Format</label>
-          {FORMATS.map((f) => (
-            <label
-              key={f.id}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                border: `1px solid ${format === f.id ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                background: format === f.id ? 'rgba(16,185,129,0.08)' : 'transparent'
-              }}
-            >
-              <input
-                type="radio"
-                name="format"
-                value={f.id}
-                checked={format === f.id}
-                onChange={() => setFormat(f.id)}
-                style={{ accentColor: 'var(--color-accent)' }}
-              />
-              <div>
-                <div style={{ fontSize: 12, color: 'var(--color-text)', fontWeight: format === f.id ? 500 : 400 }}>
-                  {f.label}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{f.ext}</div>
-              </div>
-            </label>
-          ))}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Format</label>
+            <div className="space-y-1.5">
+              {FORMATS.map((f) => (
+                <label
+                  key={f.id}
+                  className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors"
+                  style={{
+                    border: `1px solid ${format === f.id ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    background: format === f.id ? 'rgba(16,185,129,0.08)' : 'transparent'
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="format"
+                    value={f.id}
+                    checked={format === f.id}
+                    onChange={() => setFormat(f.id)}
+                    style={{ accentColor: 'var(--color-accent)' }}
+                  />
+                  <div>
+                    <div className="text-sm" style={{ fontWeight: format === f.id ? 500 : 400, color: 'var(--color-text)' }}>
+                      {f.label}
+                    </div>
+                    <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{f.ext}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '7px 16px', borderRadius: 4, fontSize: 13, cursor: 'pointer',
-              border: '1px solid var(--color-border)', background: 'transparent',
-              color: 'var(--color-text-muted)'
-            }}
-          >
-            Batal
-          </button>
-          <button
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Batal</Button>
+          <Button
             onClick={handleExport}
             disabled={exporting || !requests.length}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 16px', borderRadius: 4, fontSize: 13, cursor: 'pointer',
-              background: 'var(--color-accent)', color: '#fff', border: 'none',
-              opacity: exporting || !requests.length ? 0.5 : 1
-            }}
+            className="flex items-center gap-1.5"
           >
             <Download size={13} />
             {exporting ? 'Menyimpan...' : 'Export'}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

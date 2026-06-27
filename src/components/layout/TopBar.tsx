@@ -2,6 +2,7 @@ import { Moon, Sun } from 'lucide-react'
 import { useUiStore } from '../../store/uiStore'
 import { useProjectStore } from '../../store/projectStore'
 import { EnvSelector } from '../environment/EnvSelector'
+import { cn } from '../../lib/utils'
 
 export function TopBar(): JSX.Element {
   const { theme, toggleTheme } = useUiStore()
@@ -9,7 +10,7 @@ export function TopBar(): JSX.Element {
 
   return (
     <div
-      className="flex items-center justify-between px-4"
+      className={cn('flex items-center justify-between px-3')}
       style={{
         height: 40,
         background: 'var(--color-surface)',
@@ -19,14 +20,17 @@ export function TopBar(): JSX.Element {
       } as React.CSSProperties}
     >
       {/* App name + project */}
-      <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
-        <span className="font-bold text-sm" style={{ color: 'var(--color-accent)' }}>
-          Kang Paket API
+      <div
+        className="flex items-center gap-2"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+      >
+        <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--color-accent)' }}>
+          Kang Paket
         </span>
         {workspace && (
           <>
-            <span style={{ color: 'var(--color-border)' }}>/</span>
-            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            <span className="text-xs select-none" style={{ color: 'var(--color-border)' }}>/</span>
+            <span className="text-xs truncate max-w-[160px]" style={{ color: 'var(--color-text-muted)' }}>
               {workspace.meta.name}
             </span>
           </>
@@ -35,14 +39,17 @@ export function TopBar(): JSX.Element {
 
       {/* Actions */}
       <div
-        className="flex items-center gap-2"
+        className="flex items-center gap-3"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         <EnvSelector />
         <button
           onClick={toggleTheme}
           title="Toggle theme"
-          className="flex items-center justify-center w-7 h-7 rounded hover:opacity-70 transition-opacity"
+          className={cn(
+            'flex items-center justify-center w-7 h-7 rounded',
+            'transition-colors hover:bg-[var(--color-border)]'
+          )}
           style={{ color: 'var(--color-text-muted)' }}
         >
           {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}

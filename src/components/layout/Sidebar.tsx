@@ -8,6 +8,10 @@ import { MethodBadge } from '../common/MethodBadge'
 import { NewProjectDialog } from '../project/NewProjectDialog'
 import { ExportDialog } from '../importexport/ExportDialog'
 import { ImportReviewDialog } from '../importexport/ImportReviewDialog'
+import { ScrollArea } from '../ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { Separator } from '../ui/separator'
+import { cn } from '../../lib/utils'
 import { ipc } from '../../lib/ipc'
 import type { RequestItem } from '../../types/collection'
 import type { Environment } from '../../types/environment'
@@ -103,63 +107,116 @@ export function Sidebar(): JSX.Element {
         />
       )}
 
-      {/* Icon rail */}
+      {/* Icon rail — 44px */}
       <div
-        className="flex flex-col items-center gap-1 py-2 px-1"
-        style={{ width: 40, borderRight: '1px solid var(--color-border)' }}
+        className="flex flex-col items-center gap-1 py-3 px-1.5"
+        style={{ width: 44, borderRight: '1px solid var(--color-border)', flexShrink: 0 }}
       >
         {[
           { panel: 'collections' as const, icon: FolderOpen, title: 'Collections' },
           { panel: 'history' as const, icon: Clock, title: 'History' }
         ].map(({ panel, icon: Icon, title }) => (
-          <button
-            key={panel}
-            onClick={() => setSidebarPanel(sidebarPanel === panel ? null : panel)}
-            title={title}
-            className="flex items-center justify-center w-7 h-7 rounded transition-colors"
-            style={{
-              color: sidebarPanel === panel ? 'var(--color-accent)' : 'var(--color-text-muted)',
-              background: sidebarPanel === panel ? 'var(--color-bg)' : 'transparent'
-            }}
-          >
-            <Icon size={15} />
-          </button>
+          <Tooltip key={panel}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setSidebarPanel(sidebarPanel === panel ? null : panel)}
+                className={cn(
+                  'flex items-center justify-center w-8 h-8 rounded-md transition-colors',
+                  sidebarPanel === panel
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                )}
+                style={
+                  sidebarPanel === panel
+                    ? { background: 'var(--color-bg)', color: 'var(--color-accent)' }
+                    : { color: 'var(--color-text-muted)' }
+                }
+              >
+                <Icon size={16} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={6}>
+              {title}
+            </TooltipContent>
+          </Tooltip>
         ))}
       </div>
 
-      {/* Panel content */}
+      {/* Panel content — 224px */}
       {sidebarPanel && (
-        <div className="flex flex-col" style={{ width: 220, overflow: 'hidden' }}>
+        <div className="flex flex-col" style={{ width: 224, overflow: 'hidden', flexShrink: 0 }}>
           {/* Panel header */}
-          <div
-            className="flex items-center justify-between px-3 py-2"
-            style={{ borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}
-          >
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+          <div className="flex items-center justify-between px-3 py-2.5" style={{ flexShrink: 0 }}>
+            <span
+              className="font-medium tracking-wider uppercase"
+              style={{ fontSize: 10, color: 'var(--color-text-muted)' }}
+            >
               {sidebarPanel === 'collections' ? 'Collections' : 'History'}
             </span>
+
             {sidebarPanel === 'collections' && (
-              <div className="flex gap-1">
-                <button onClick={importFile} title="Import collection" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
-                  <Upload size={13} />
-                </button>
+              <div className="flex items-center gap-0.5">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={importFile}
+                      className="flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-accent/50"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
+                      <Upload size={13} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Import collection</TooltipContent>
+                </Tooltip>
+
                 {workspace && (
-                  <button onClick={() => setShowExport(true)} title="Export collection" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
-                    <Download size={13} />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setShowExport(true)}
+                        className="flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-accent/50"
+                        style={{ color: 'var(--color-text-muted)' }}
+                      >
+                        <Download size={13} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Export collection</TooltipContent>
+                  </Tooltip>
                 )}
-                <button onClick={openProject} title="Buka project" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
-                  <FolderOpen size={13} />
-                </button>
-                <button onClick={() => setShowNewProject(true)} title="Buat project baru" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
-                  <FolderPlus size={13} />
-                </button>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={openProject}
+                      className="flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-accent/50"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
+                      <FolderOpen size={13} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Buka project</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setShowNewProject(true)}
+                      className="flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-accent/50"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
+                      <FolderPlus size={13} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Buat project baru</TooltipContent>
+                </Tooltip>
               </div>
             )}
           </div>
 
+          <Separator style={{ background: 'var(--color-border)' }} />
+
           {/* Panel body */}
-          <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="flex-1">
             {sidebarPanel === 'collections' && (
               <CollectionsPanel
                 collections={collections}
@@ -171,7 +228,7 @@ export function Sidebar(): JSX.Element {
               />
             )}
             {sidebarPanel === 'history' && <HistoryPanel />}
-          </div>
+          </ScrollArea>
         </div>
       )}
     </div>
@@ -197,20 +254,20 @@ function CollectionsPanel({
 
   if (!hasWorkspace) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 p-4">
-        <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+      <div className="flex flex-col items-center justify-center gap-3 p-5 pt-8">
+        <p className="text-xs text-center leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
           Buka atau buat project untuk mulai menyimpan request.
         </p>
         <button
           onClick={onOpenProject}
-          className="text-xs px-3 py-1.5 rounded w-full transition-opacity hover:opacity-80"
+          className="text-xs px-3 py-2 rounded-md w-full transition-opacity hover:opacity-80"
           style={{ background: 'var(--color-accent)', color: '#fff' }}
         >
           Buka Project
         </button>
         <button
           onClick={onNewProject}
-          className="text-xs px-3 py-1.5 rounded w-full transition-opacity hover:opacity-80"
+          className="text-xs px-3 py-2 rounded-md w-full transition-opacity hover:opacity-80"
           style={{ background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}
         >
           Buat Project Baru
@@ -221,15 +278,15 @@ function CollectionsPanel({
 
   if (Object.keys(collections).length === 0) {
     return (
-      <div className="p-3 flex flex-col gap-2">
+      <div className="p-4 flex flex-col gap-3">
         <button
           onClick={onNewRequest}
-          className="flex items-center gap-1.5 text-xs w-full px-2 py-1.5 rounded hover:opacity-80 transition-opacity"
+          className="flex items-center justify-center gap-1.5 text-xs w-full px-3 py-2 rounded-md hover:opacity-80 transition-opacity"
           style={{ background: 'var(--color-accent)', color: '#fff' }}
         >
           <Plus size={12} /> New Request
         </button>
-        <p className="text-xs text-center mt-2" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="text-xs text-center mt-1 leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
           Project kosong. Buat request pertama Anda.
         </p>
       </div>
@@ -237,23 +294,29 @@ function CollectionsPanel({
   }
 
   return (
-    <div className="py-1">
+    <div className="py-2">
       {projectName && (
-        <div
-          className="px-3 py-2 mb-1 flex items-center gap-1.5"
-          style={{ borderBottom: '1px solid var(--color-border)' }}
-        >
-          <FolderOpen size={12} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
-          <span className="text-xs font-medium truncate" style={{ color: 'var(--color-text)' }}>
-            {projectName}
-          </span>
-        </div>
+        <>
+          <div className="px-3 py-2 flex items-center gap-2">
+            <FolderOpen size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+            <span className="text-xs font-medium truncate" style={{ color: 'var(--color-text)' }}>
+              {projectName}
+            </span>
+          </div>
+          <Separator className="mb-2" style={{ background: 'var(--color-border)' }} />
+        </>
       )}
+
       {Object.entries(collections).map(([name, requests]) => (
-        <div key={name}>
-          <div className="px-3 py-1.5 text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>
+        <div key={name} className="mb-2">
+          {/* Collection header */}
+          <div
+            className="px-3 pb-1 pt-2 font-medium tracking-wider uppercase"
+            style={{ fontSize: 10, color: 'var(--color-text-muted)' }}
+          >
             {name}
           </div>
+
           {requests.map((req) => (
             <button
               key={req.id}
@@ -267,8 +330,11 @@ function CollectionsPanel({
                   auth: req.auth
                 }
               })}
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left hover:opacity-80 transition-opacity"
-              style={{ color: 'var(--color-text)' }}
+              className={cn(
+                'flex items-center gap-2 w-full py-2 px-3 text-xs text-left rounded-md mx-1 transition-colors',
+                'hover:bg-accent/50'
+              )}
+              style={{ color: 'var(--color-text)', width: 'calc(100% - 8px)' }}
             >
               <MethodBadge method={req.method} />
               <span className="truncate">{req.name}</span>
@@ -332,8 +398,8 @@ function HistoryPanel(): JSX.Element {
   }
 
   return (
-    <div className="py-1">
-      <div className="flex justify-end px-3 pb-1">
+    <div className="py-2">
+      <div className="flex justify-end px-3 pb-2">
         <button
           onClick={clearAll}
           className="text-xs hover:opacity-70 transition-opacity"
@@ -342,11 +408,17 @@ function HistoryPanel(): JSX.Element {
           Hapus semua
         </button>
       </div>
-      {Object.entries(groups).map(([date, items]) => (
-        <div key={date}>
-          <div className="px-3 py-1.5 text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>
+
+      {Object.entries(groups).map(([date, items], groupIdx) => (
+        <div key={date} className="mb-2">
+          {/* Date group header */}
+          <div
+            className="px-3 pb-1 pt-2 font-medium tracking-wider uppercase"
+            style={{ fontSize: 10, color: 'var(--color-text-muted)' }}
+          >
             {date}
           </div>
+
           {items.map((entry) => (
             <button
               key={entry.id}
@@ -354,21 +426,28 @@ function HistoryPanel(): JSX.Element {
                 name: `${entry.method} ${entry.url.replace(/^https?:\/\//, '').slice(0, 30)}`,
                 request: { method: entry.method, url: entry.url, headers: [], body: { type: 'none', content: '' }, auth: { type: 'none' } }
               })}
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left hover:opacity-80 transition-opacity"
-              style={{ color: 'var(--color-text)' }}
+              className={cn(
+                'flex items-center gap-2 w-full py-2 px-3 text-xs text-left rounded-md mx-1 transition-colors',
+                'hover:bg-accent/50'
+              )}
+              style={{ color: 'var(--color-text)', width: 'calc(100% - 8px)' }}
             >
               <MethodBadge method={entry.method} />
-              <span className="flex-1 truncate" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="flex-1 truncate min-w-0" style={{ color: 'var(--color-text-muted)' }}>
                 {entry.url.replace(/^https?:\/\//, '')}
               </span>
-              <span style={{ color: statusColor(entry.status), flexShrink: 0 }}>
+              <span className="text-xs font-medium tabular-nums flex-shrink-0" style={{ color: statusColor(entry.status) }}>
                 {entry.status || '—'}
               </span>
-              <span style={{ color: 'var(--color-text-muted)', flexShrink: 0 }}>
+              <span className="text-xs flex-shrink-0" style={{ color: 'var(--color-text-muted)', opacity: 0.7 }}>
                 {formatTime(entry.timestamp)}
               </span>
             </button>
           ))}
+
+          {groupIdx < Object.keys(groups).length - 1 && (
+            <Separator className="mt-2" style={{ background: 'var(--color-border)' }} />
+          )}
         </div>
       ))}
     </div>
