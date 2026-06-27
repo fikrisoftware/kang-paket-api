@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { FolderOpen, Clock, Plus, FolderPlus, Upload, Download, History } from 'lucide-react'
+import { FolderOpen, Clock, Plus, FolderPlus, Upload, Download, History, Folder, ChevronRight, ChevronDown } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { useUiStore } from '../../store/uiStore'
 import { useTabStore } from '../../store/tabStore'
@@ -27,15 +27,7 @@ export function Sidebar(): JSX.Element {
   const [showExport, setShowExport] = useState(false)
   const [importResult, setImportResult] = useState<WorkspaceTree | null>(null)
 
-  const collections = useMemo(() => {
-    const reqs = workspace?.requests ?? []
-    return reqs.reduce<Record<string, RequestItem[]>>((acc, r) => {
-      const key = r.collectionName ?? 'Default'
-      if (!acc[key]) acc[key] = []
-      acc[key].push(r)
-      return acc
-    }, {})
-  }, [workspace])
+  const tree = useMemo(() => buildTree(workspace?.requests ?? []), [workspace])
 
   async function openProject(): Promise<void> {
     const result = await ipc.openProject()
@@ -69,7 +61,9 @@ export function Sidebar(): JSX.Element {
   async function handleImportSave(requests: RequestItem[], envs: Environment[], collectionName: string): Promise<void> {
     if (!workspace?.projectPath) return
     for (const req of requests) {
-      await ipc.saveRequest(workspace.projectPath, collectionName, { ...req, collectionName })
+      // Nama collection pilihan jadi root, hierarki folder asal dinest di bawahnya.
+      const groupPath = req.groupPath?.length ? [collectionName, ...req.groupPath] : [collectionName]
+      await ipc.saveRequest(workspace.projectPath, collectionName, { ...req, collectionName, groupPath })
     }
     const updated = await ipc.loadProject(workspace.projectPath)
     setWorkspace(updated)
@@ -221,7 +215,7 @@ export function Sidebar(): JSX.Element {
           <ScrollArea className="flex-1">
             {sidebarPanel === 'collections' && (
               <CollectionsPanel
-                collections={collections}
+                tree={tree}
                 projectName={workspace?.meta.name}
                 projectPath={workspace?.projectPath}
                 hasWorkspace={!!workspace}
@@ -244,7 +238,7 @@ export function Sidebar(): JSX.Element {
 }
 
 function CollectionsPanel({
-  collections,
+  tree,
   projectName,
   projectPath,
   hasWorkspace,
@@ -254,7 +248,7 @@ function CollectionsPanel({
   onNewProject,
   onNewRequest
 }: {
-  collections: Record<string, RequestItem[]>
+  tree: TreeNode
   projectName?: string
   projectPath?: string
   hasWorkspace: boolean
@@ -264,11 +258,11 @@ function CollectionsPanel({
   onNewProject: () => void
   onNewRequest: () => void
 }): JSX.Element {
-  const { addTab } = useTabStore()
-
   function projectLabel(path: string): string {
     return path.replace(/\\/g, '/').split('/').pop() ?? path
   }
+
+  const isEmpty = tree.children.size === 0 && tree.requests.length === 0
 
   if (!hasWorkspace) {
     return (
@@ -331,7 +325,7 @@ function CollectionsPanel({
     )
   }
 
-  if (Object.keys(collections).length === 0) {
+  if (isEmpty) {
     return (
       <div className="p-4 flex flex-col gap-3">
         <button
@@ -347,6 +341,9 @@ function CollectionsPanel({
       </div>
     )
   }
+
+  // Anak-anak root, folder dulu (terurut) baru request lepasan.
+  const rootFolders = [...tree.children.values()].sort((a, b) => a.name.localeCompare(b.name))
 
   return (
     <div className="py-2">
@@ -365,47 +362,111 @@ function CollectionsPanel({
               )}
             </div>
           </div>
-          <Separator className="mb-2" style={{ background: 'var(--color-border)' }} />
+          <Separator className="mb-1" style={{ background: 'var(--color-border)' }} />
         </>
       )}
 
-      {Object.entries(collections).map(([name, requests]) => (
-        <div key={name} className="mb-2">
-          {/* Collection header */}
-          <div
-            className="px-3 pb-1 pt-2 font-medium tracking-wider uppercase"
-            style={{ fontSize: 10, color: 'var(--color-text-muted)' }}
-          >
-            {name}
-          </div>
+      {rootFolders.map((node) => (
+        <TreeFolder key={node.name} node={node} depth={0} />
+      ))}
 
-          {requests.map((req) => (
-            <button
-              key={req.id}
-              onClick={() => addTab({
-                name: req.name,
-                request: {
-                  method: req.method,
-                  url: req.url,
-                  headers: req.headers,
-                  body: req.body,
-                  auth: req.auth
-                }
-              })}
-              className={cn(
-                'flex items-center gap-2 w-full py-2 px-3 text-xs text-left rounded-md mx-1 transition-colors',
-                'hover:bg-accent/50'
-              )}
-              style={{ color: 'var(--color-text)', width: 'calc(100% - 8px)' }}
-            >
-              <MethodBadge method={req.method} />
-              <span className="truncate">{req.name}</span>
-            </button>
-          ))}
-        </div>
+      {/* Request tanpa grup (langsung di root) */}
+      {tree.requests.map((req) => (
+        <RequestRow key={req.id} req={req} depth={0} />
       ))}
     </div>
   )
+}
+
+// ─── Tree model & rendering ─────────────────────────────────────────────────
+
+interface TreeNode {
+  name: string
+  children: Map<string, TreeNode>
+  requests: RequestItem[]
+}
+
+function buildTree(requests: RequestItem[]): TreeNode {
+  const root: TreeNode = { name: '', children: new Map(), requests: [] }
+  for (const req of requests) {
+    const path = req.groupPath?.length
+      ? req.groupPath
+      : req.collectionName
+        ? [req.collectionName]
+        : []
+    if (path.length === 0) {
+      root.requests.push(req)
+      continue
+    }
+    let node = root
+    for (const segment of path) {
+      let child = node.children.get(segment)
+      if (!child) {
+        child = { name: segment, children: new Map(), requests: [] }
+        node.children.set(segment, child)
+      }
+      node = child
+    }
+    node.requests.push(req)
+  }
+  return root
+}
+
+function RequestRow({ req, depth }: { req: RequestItem; depth: number }): JSX.Element {
+  const { addTab } = useTabStore()
+  return (
+    <button
+      onClick={() => addTab({
+        name: req.name,
+        request: { method: req.method, url: req.url, headers: req.headers, body: req.body, auth: req.auth }
+      })}
+      className="flex items-center gap-2 w-full py-1.5 pr-3 text-xs text-left rounded-md transition-colors hover:bg-accent/50"
+      style={{ color: 'var(--color-text)', paddingLeft: 12 + depth * 14 }}
+    >
+      <MethodBadge method={req.method} />
+      <span className="truncate">{req.name}</span>
+    </button>
+  )
+}
+
+function TreeFolder({ node, depth }: { node: TreeNode; depth: number }): JSX.Element {
+  const [open, setOpen] = useState(true)
+  const childFolders = [...node.children.values()].sort((a, b) => a.name.localeCompare(b.name))
+  const count = countRequests(node)
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 w-full py-1.5 pr-2 text-left rounded-md transition-colors hover:bg-accent/50"
+        style={{ paddingLeft: 8 + depth * 14, color: 'var(--color-text)' }}
+      >
+        {open
+          ? <ChevronDown size={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+          : <ChevronRight size={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />}
+        <Folder size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+        <span className="text-xs font-medium truncate flex-1">{node.name}</span>
+        <span className="text-[10px] tabular-nums" style={{ color: 'var(--color-text-muted)' }}>{count}</span>
+      </button>
+
+      {open && (
+        <>
+          {childFolders.map((child) => (
+            <TreeFolder key={child.name} node={child} depth={depth + 1} />
+          ))}
+          {node.requests.map((req) => (
+            <RequestRow key={req.id} req={req} depth={depth + 1} />
+          ))}
+        </>
+      )}
+    </div>
+  )
+}
+
+function countRequests(node: TreeNode): number {
+  let total = node.requests.length
+  for (const child of node.children.values()) total += countRequests(child)
+  return total
 }
 
 function statusColor(status: number): string {

@@ -110,9 +110,9 @@ function parsePostman(raw: unknown): RequestItem[] {
   const collectionAuth = col.auth
   const items: RequestItem[] = []
 
-  const walk = (nodes: PostmanNode[], folderName?: string): void => {
+  const walk = (nodes: PostmanNode[], path: string[]): void => {
     for (const node of nodes) {
-      if (node.item) { walk(node.item, node.name); continue }
+      if (node.item) { walk(node.item, [...path, node.name ?? 'Untitled']); continue }
       if (!node.request) continue
       const r = node.request
       const { raw: urlRaw, queryParams } = parsePostmanUrl(r.url ?? '')
@@ -133,13 +133,14 @@ function parsePostman(raw: unknown): RequestItem[] {
           .map((h) => ({ key: h.key, value: h.value, enabled: !h.disabled })),
         body: parsePostmanBody(r.body),
         auth: parsePostmanAuth(r.auth ?? collectionAuth),
-        collectionName: folderName,
+        collectionName: path[0],
+        groupPath: path.length ? path : undefined,
         meta: { createdAt: new Date().toISOString() }
       })
     }
   }
 
-  walk(col.item ?? [])
+  walk(col.item ?? [], [])
   return items
 }
 
@@ -262,8 +263,22 @@ function parseInsomnia(raw: unknown): RequestItem[] {
   const exp = raw as { resources?: InsomniaResource[] }
   const resources = exp.resources ?? []
   const folders = new Map(
-    resources.filter((r) => r._type === 'request_group').map((r) => [r._id, r.name])
+    resources.filter((r) => r._type === 'request_group').map((r) => [r._id, r])
   )
+
+  // Telusuri rantai parentId ke atas untuk membangun path folder (root → daun).
+  const buildPath = (parentId?: string): string[] => {
+    const path: string[] = []
+    let current = parentId
+    const guard = new Set<string>()
+    while (current && folders.has(current) && !guard.has(current)) {
+      guard.add(current)
+      const folder = folders.get(current)!
+      if (folder.name) path.unshift(folder.name)
+      current = folder.parentId
+    }
+    return path
+  }
 
   return resources
     .filter((r) => r._type === 'request')
@@ -292,7 +307,8 @@ function parseInsomnia(raw: unknown): RequestItem[] {
         headers: (r.headers ?? []).map((h) => ({ key: h.name, value: h.value, enabled: !h.disabled })),
         body,
         auth: parseInsomniaAuth(r.authentication),
-        collectionName: r.parentId ? (folders.get(r.parentId) ?? undefined) : undefined,
+        collectionName: buildPath(r.parentId)[0],
+        groupPath: buildPath(r.parentId).length ? buildPath(r.parentId) : undefined,
         meta: { createdAt: new Date().toISOString() }
       }
     })

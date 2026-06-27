@@ -25,6 +25,13 @@ function readProjectTree(dirPath: string): WorkspaceTree {
         else if (entry.name.endsWith('.kp.json')) {
           const req: RequestItem = JSON.parse(fs.readFileSync(full, 'utf-8'))
           req.filePath = full
+          // Derive grup dari path folder relatif terhadap collections/
+          const rel = path.relative(collectionsDir, path.dirname(full))
+          const segments = rel ? rel.split(path.sep) : []
+          if (segments.length) {
+            req.groupPath = segments
+            req.collectionName = segments[0]
+          }
           requests.push(req)
         }
       }
@@ -61,7 +68,11 @@ export function registerFsHandlers(): void {
   })
 
   ipcMain.handle('fs:saveRequest', async (_e, projectPath: string, collectionName: string, req: RequestItem): Promise<void> => {
-    const collDir = path.join(projectPath, 'collections', collectionName)
+    // Gunakan groupPath (bertingkat) jika ada, jika tidak fallback ke collectionName satu level.
+    const segments = req.groupPath?.length ? req.groupPath : [collectionName]
+    // Sanitasi tiap segmen agar aman jadi nama folder.
+    const safeSegments = segments.map((s) => s.replace(/[<>:"/\\|?*]/g, '_').trim() || 'Untitled')
+    const collDir = path.join(projectPath, 'collections', ...safeSegments)
     fs.mkdirSync(collDir, { recursive: true })
     const filePath = req.filePath ?? path.join(collDir, `${req.id}.kp.json`)
     fs.writeFileSync(filePath, JSON.stringify(req, null, 2))
