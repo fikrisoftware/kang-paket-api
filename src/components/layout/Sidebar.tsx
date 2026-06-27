@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { FolderOpen, Clock, Plus, FolderPlus, Upload, Download } from 'lucide-react'
+import { FolderOpen, Clock, Plus, FolderPlus, Upload, Download, History } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { useUiStore } from '../../store/uiStore'
 import { useTabStore } from '../../store/tabStore'
@@ -20,7 +20,7 @@ import type { WorkspaceTree } from '../../types/project'
 export function Sidebar(): JSX.Element {
   const { sidebarPanel, setSidebarPanel } = useUiStore()
   const workspace = useProjectStore((s) => s.workspace)
-  const { setWorkspace } = useProjectStore()
+  const { setWorkspace, recentPaths } = useProjectStore()
   const { addTab } = useTabStore()
   const { addEnvironment, setVariables, environments } = useEnvStore()
   const [showNewProject, setShowNewProject] = useState(false)
@@ -223,8 +223,14 @@ export function Sidebar(): JSX.Element {
               <CollectionsPanel
                 collections={collections}
                 projectName={workspace?.meta.name}
+                projectPath={workspace?.projectPath}
                 hasWorkspace={!!workspace}
+                recentPaths={recentPaths}
                 onOpenProject={openProject}
+                onOpenRecent={async (path) => {
+                  const result = await ipc.loadProject(path)
+                  setWorkspace(result)
+                }}
                 onNewProject={() => setShowNewProject(true)}
                 onNewRequest={() => addTab()}
               />
@@ -240,40 +246,87 @@ export function Sidebar(): JSX.Element {
 function CollectionsPanel({
   collections,
   projectName,
+  projectPath,
   hasWorkspace,
+  recentPaths,
   onOpenProject,
+  onOpenRecent,
   onNewProject,
   onNewRequest
 }: {
   collections: Record<string, RequestItem[]>
   projectName?: string
+  projectPath?: string
   hasWorkspace: boolean
+  recentPaths: string[]
   onOpenProject: () => void
+  onOpenRecent: (path: string) => void
   onNewProject: () => void
   onNewRequest: () => void
 }): JSX.Element {
   const { addTab } = useTabStore()
 
+  function projectLabel(path: string): string {
+    return path.replace(/\\/g, '/').split('/').pop() ?? path
+  }
+
   if (!hasWorkspace) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 p-5 pt-8">
-        <p className="text-xs text-center leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
-          Buka atau buat project untuk mulai menyimpan request.
-        </p>
+      <div className="flex flex-col gap-1 p-3">
+        {/* Action buttons */}
         <button
           onClick={onOpenProject}
-          className="text-xs px-3 py-2 rounded-md w-full transition-opacity hover:opacity-80"
+          className="flex items-center gap-2 w-full text-xs px-3 py-2.5 rounded-md transition-colors hover:opacity-90"
           style={{ background: 'var(--color-accent)', color: '#fff' }}
         >
+          <FolderOpen size={13} />
           Buka Project
         </button>
         <button
           onClick={onNewProject}
-          className="text-xs px-3 py-2 rounded-md w-full transition-opacity hover:opacity-80"
-          style={{ background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}
+          className="flex items-center gap-2 w-full text-xs px-3 py-2.5 rounded-md transition-colors"
+          style={{ color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}
         >
+          <FolderPlus size={13} />
           Buat Project Baru
         </button>
+
+        {/* Recent projects */}
+        {recentPaths.length > 0 && (
+          <div className="mt-3">
+            <div
+              className="flex items-center gap-1.5 px-1 pb-1.5 font-semibold uppercase tracking-wider"
+              style={{ fontSize: 10, color: 'var(--color-text-muted)' }}
+            >
+              <History size={10} />
+              Terakhir dibuka
+            </div>
+            {recentPaths.map((path) => (
+              <button
+                key={path}
+                onClick={() => onOpenRecent(path)}
+                className="flex items-center gap-2 w-full px-2 py-2 rounded-md text-left transition-colors hover:bg-[var(--color-border)]"
+                title={path}
+              >
+                <FolderOpen size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium truncate" style={{ color: 'var(--color-text)' }}>
+                    {projectLabel(path)}
+                  </div>
+                  <div className="text-[10px] truncate" style={{ color: 'var(--color-text-muted)' }}>
+                    {path}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {recentPaths.length === 0 && (
+          <p className="text-xs text-center mt-4 leading-relaxed px-2" style={{ color: 'var(--color-text-muted)' }}>
+            Buka atau buat project untuk mulai menyimpan request.
+          </p>
+        )}
       </div>
     )
   }
@@ -299,11 +352,18 @@ function CollectionsPanel({
     <div className="py-2">
       {projectName && (
         <>
-          <div className="px-3 py-2 flex items-center gap-2">
+          <div className="px-3 py-2.5 flex items-center gap-2">
             <FolderOpen size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
-            <span className="text-xs font-medium truncate" style={{ color: 'var(--color-text)' }}>
-              {projectName}
-            </span>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+                {projectName}
+              </div>
+              {projectPath && (
+                <div className="text-[10px] truncate" style={{ color: 'var(--color-text-muted)' }} title={projectPath}>
+                  {projectPath}
+                </div>
+              )}
+            </div>
           </div>
           <Separator className="mb-2" style={{ background: 'var(--color-border)' }} />
         </>
