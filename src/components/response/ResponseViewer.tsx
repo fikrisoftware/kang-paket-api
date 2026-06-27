@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
-import { Copy, Download, Clock, Scale } from 'lucide-react'
+import { Copy, Download, Clock, Scale, Filter, X } from 'lucide-react'
 import type { PaketResponse } from '../../types/request'
+import { applyJsonPath } from '../../lib/filter'
 
 interface Props {
   response: PaketResponse
@@ -55,16 +56,29 @@ function Metric({ label, children }: { label: string; children: React.ReactNode 
 
 export function ResponseViewer({ response }: Props): JSX.Element {
   const [activeTab, setActiveTab] = useState<Tab>('body')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [filterPath, setFilterPath] = useState('')
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
-  const prettyBody = isJson(response.body) ? prettyJson(response.body) : response.body
+  const bodyIsJson = isJson(response.body)
+  const prettyBody = bodyIsJson ? prettyJson(response.body) : response.body
+
+  // Hasil filter JSONPath (hanya saat panel filter aktif & ada ekspresi).
+  const filter = useMemo(
+    () => applyJsonPath(response.body, filterOpen ? filterPath : ''),
+    [response.body, filterPath, filterOpen]
+  )
+  const isFiltering = filterOpen && filterPath.trim().length > 0
+  const displayBody = isFiltering && filter.ok
+    ? JSON.stringify(filter.value, null, 2)
+    : prettyBody
 
   function copyBody(): void {
-    navigator.clipboard.writeText(prettyBody)
+    navigator.clipboard.writeText(displayBody)
   }
 
   function downloadBody(): void {
-    const ext = isJson(response.body) ? 'json' : 'txt'
-    const blob = new Blob([prettyBody], { type: 'text/plain' })
+    const ext = bodyIsJson ? 'json' : 'txt'
+    const blob = new Blob([displayBody], { type: 'text/plain' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = `response.${ext}`
@@ -121,6 +135,16 @@ export function ResponseViewer({ response }: Props): JSX.Element {
 
         <div className="flex-1" />
 
+        {bodyIsJson && (
+          <button
+            onClick={() => { setActiveTab('body'); setFilterOpen((v) => !v) }}
+            title="Filter JSONPath"
+            className="flex items-center justify-center w-8 h-8 rounded hover:opacity-70 transition-opacity"
+            style={{ color: filterOpen ? 'var(--color-accent)' : 'var(--color-text-muted)' }}
+          >
+            <Filter size={15} />
+          </button>
+        )}
         <button onClick={copyBody} title="Copy response" className="flex items-center justify-center w-8 h-8 rounded hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
           <Copy size={15} />
         </button>
@@ -141,16 +165,51 @@ export function ResponseViewer({ response }: Props): JSX.Element {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden flex flex-col">
         {activeTab === 'body' && (
-          <CodeMirror
-            value={prettyBody}
-            extensions={isJson(response.body) ? [json()] : []}
-            theme={isDark ? 'dark' : 'light'}
-            editable={false}
-            style={{ height: '100%', fontSize: 13 }}
-            basicSetup={{ lineNumbers: true, foldGutter: true }}
-          />
+          <>
+            {filterOpen && bodyIsJson && (
+              <div
+                className="flex items-center gap-2 px-3 py-2"
+                style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', flexShrink: 0 }}
+              >
+                <Filter size={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                <input
+                  value={filterPath}
+                  onChange={(e) => setFilterPath(e.target.value)}
+                  placeholder="JSONPath, mis. $.data[*].email"
+                  autoFocus
+                  className="flex-1 text-xs font-mono"
+                  style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--color-text)' }}
+                />
+                {isFiltering && filter.ok && (
+                  <span className="text-[11px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ background: 'rgba(16,185,129,0.12)', color: 'var(--color-accent)' }}>
+                    {filter.count} hasil
+                  </span>
+                )}
+                {isFiltering && !filter.ok && (
+                  <span className="text-[11px] flex-shrink-0" style={{ color: '#ef4444' }}>
+                    {filter.error}
+                  </span>
+                )}
+                {filterPath && (
+                  <button onClick={() => setFilterPath('')} title="Bersihkan" className="flex items-center justify-center w-5 h-5 rounded hover:bg-[var(--color-border)] flex-shrink-0" style={{ color: 'var(--color-text-muted)' }}>
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="flex-1 overflow-hidden">
+              <CodeMirror
+                value={displayBody}
+                extensions={bodyIsJson ? [json()] : []}
+                theme={isDark ? 'dark' : 'light'}
+                editable={false}
+                style={{ height: '100%', fontSize: 13 }}
+                basicSetup={{ lineNumbers: true, foldGutter: true }}
+              />
+            </div>
+          </>
         )}
 
         {activeTab === 'headers' && (
