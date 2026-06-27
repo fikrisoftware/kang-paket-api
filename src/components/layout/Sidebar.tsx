@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
-import { FolderOpen, Clock, Plus, FolderPlus, Upload } from 'lucide-react'
+import { FolderOpen, Clock, Plus, FolderPlus, Upload, Download } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { useUiStore } from '../../store/uiStore'
 import { useTabStore } from '../../store/tabStore'
 import { MethodBadge } from '../common/MethodBadge'
 import { NewProjectDialog } from '../project/NewProjectDialog'
+import { ExportDialog } from '../importexport/ExportDialog'
 import { ipc } from '../../lib/ipc'
 import type { RequestItem } from '../../types/collection'
 
@@ -14,6 +15,7 @@ export function Sidebar(): JSX.Element {
   const { setWorkspace } = useProjectStore()
   const { addTab } = useTabStore()
   const [showNewProject, setShowNewProject] = useState(false)
+  const [showExport, setShowExport] = useState(false)
 
   const collections = useMemo(() => {
     const reqs = workspace?.requests ?? []
@@ -52,6 +54,7 @@ export function Sidebar(): JSX.Element {
           onConfirm={handleCreateProject}
         />
       )}
+      {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
 
       {/* Icon rail */}
       <div
@@ -93,6 +96,11 @@ export function Sidebar(): JSX.Element {
                 <button onClick={importFile} title="Import collection" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
                   <Upload size={13} />
                 </button>
+                {workspace && (
+                  <button onClick={() => setShowExport(true)} title="Export collection" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
+                    <Download size={13} />
+                  </button>
+                )}
                 <button onClick={openProject} title="Buka project" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
                   <FolderOpen size={13} />
                 </button>
