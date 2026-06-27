@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save } from 'lucide-react'
+import { Save, Check } from 'lucide-react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { UrlBar } from './UrlBar'
 import { RequestTabs } from './RequestTabs'
@@ -21,6 +21,12 @@ export function RequestPanel(): JSX.Element {
   const { workspace, setWorkspace } = useProjectStore()
   const getActiveVars = useEnvStore((s) => s.getActiveVars)
   const [showSave, setShowSave] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
+
+  function flashSaved(): void {
+    setSavedFlash(true)
+    setTimeout(() => setSavedFlash(false), 1600)
+  }
 
   // Shortcut: Ctrl/Cmd+S simpan, Ctrl/Cmd+Enter kirim. (Dipasang sebelum early-return
   // agar urutan hooks selalu konsisten.)
@@ -125,6 +131,7 @@ export function RequestPanel(): JSX.Element {
     await ipc.saveRequest(workspace.projectPath, collectionName, req)
     setWorkspace(await ipc.loadProject(workspace.projectPath))
     updateTab(activeTabId, { isDirty: false })
+    flashSaved()
   }
 
   // Simpan request baru (atau "save as") via dialog: pilih nama & collection.
@@ -154,6 +161,7 @@ export function RequestPanel(): JSX.Element {
       collectionName,
       groupPath
     })
+    flashSaved()
   }
 
   // Tombol/Ctrl+S: kalau tab sudah terhubung → update di tempat; kalau belum → dialog.
@@ -189,21 +197,21 @@ export function RequestPanel(): JSX.Element {
         {canSave && (
           <button
             onClick={handleSaveClick}
-            title={isLinked ? 'Simpan perubahan (Ctrl+S)' : 'Simpan request ke collection (Ctrl+S)'}
+            title={isLinked ? 'Simpan perubahan ke file request (Ctrl+S)' : 'Simpan request ke collection (Ctrl+S)'}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '0 18px', height: 52, fontSize: 13, cursor: 'pointer',
               background: 'transparent',
-              color: activeTab.isDirty ? 'var(--color-accent)' : 'var(--color-text-muted)',
+              color: savedFlash ? 'var(--color-accent)' : activeTab.isDirty ? 'var(--color-accent)' : 'var(--color-text-muted)',
               border: '0', borderLeft: '1px solid var(--color-border)',
               transition: 'color 0.15s', flexShrink: 0
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = activeTab.isDirty ? 'var(--color-accent)' : 'var(--color-text-muted)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = savedFlash || activeTab.isDirty ? 'var(--color-accent)' : 'var(--color-text-muted)')}
           >
-            <Save size={15} />
-            <span>{isLinked ? 'Simpan' : 'Simpan ke…'}</span>
-            {activeTab.isDirty && (
+            {savedFlash ? <Check size={15} /> : <Save size={15} />}
+            <span>{savedFlash ? 'Tersimpan' : isLinked ? 'Simpan' : 'Simpan ke…'}</span>
+            {activeTab.isDirty && !savedFlash && (
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-accent)' }} />
             )}
           </button>
