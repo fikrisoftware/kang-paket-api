@@ -36,9 +36,10 @@ export function TopBar(): JSX.Element {
         className="flex items-center gap-2"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
-        <span className="flex items-center gap-1.5 font-semibold text-sm tracking-tight" style={{ color: 'var(--color-accent)' }}>
-          <Logo size={17} />
-          Kang Paket
+        <span className="flex items-center gap-1.5 font-semibold text-sm tracking-tight">
+          <Logo size={18} />
+          <span style={{ color: '#F47B20' }}>Kang</span>
+          <span style={{ color: 'var(--color-text)' }}>Paket</span>
         </span>
         {workspace && (
           <>
