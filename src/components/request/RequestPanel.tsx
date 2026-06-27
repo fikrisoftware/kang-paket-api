@@ -139,24 +139,19 @@ export function RequestPanel(): JSX.Element {
           <RequestTabs request={activeTab.request} onUpdate={handleUpdate} />
         </Panel>
 
-        {activeTab.response && (
-          <>
-            <PanelResizeHandle style={{ height: 4, background: 'var(--color-border)', cursor: 'row-resize' }} />
-            <Panel defaultSize={55} minSize={20}>
-              <ResponseViewer response={activeTab.response} />
-            </Panel>
-          </>
-        )}
+        <PanelResizeHandle style={{ height: 4, background: 'var(--color-border)', cursor: 'row-resize' }} />
 
-        {!activeTab.response && !activeTab.isLoading && (
-          <Panel defaultSize={55} minSize={20}>
+        <Panel defaultSize={55} minSize={20}>
+          {activeTab.response ? (
+            <ResponseViewer response={activeTab.response} />
+          ) : (
             <div className="flex items-center justify-center h-full">
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 Response akan muncul di sini setelah Send.
               </p>
             </div>
-          </Panel>
-        )}
+          )}
+        </Panel>
       </PanelGroup>
     </div>
   )
