@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "gen:icons": "node scripts/gen-icons.mjs",
     "typecheck": "tsc --noEmit",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
@@ -52,6 +53,8 @@
     "electron-builder": "^25.1.8",
     "electron-vite": "^3.0.0",
     "playwright-core": "^1.61.1",
+    "png2icons": "^2.0.1",
+    "sharp": "^0.35.2",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.3"
   },
@@ -63,6 +66,15 @@
     },
     "files": [
       "out/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": ".",
+        "filter": [
+          "icon.*"
+        ]
+      }
     ],
     "win": {
       "target": [
