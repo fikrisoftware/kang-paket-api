@@ -33,6 +33,126 @@
   --radius: 0.5rem;
 }
 
+[data-theme="midnight"] {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-border: #21262d;
+  --color-text: #c9d1d9;
+  --color-text-muted: #6e7681;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+
+  --background: 216 28% 7%;
+  --foreground: 210 17% 82%;
+  --card: 215 25% 11%;
+  --card-foreground: 210 17% 82%;
+  --popover: 215 25% 11%;
+  --popover-foreground: 210 17% 82%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 20% 16%;
+  --secondary-foreground: 210 17% 82%;
+  --muted: 215 20% 16%;
+  --muted-foreground: 214 13% 47%;
+  --accent: 215 20% 18%;
+  --accent-foreground: 210 17% 82%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 215 18% 16%;
+  --input: 215 18% 16%;
+  --ring: 217 91% 60%;
+}
+
+[data-theme="forest"] {
+  --color-bg: #0f1711;
+  --color-surface: #161d18;
+  --color-border: #243026;
+  --color-text: #d4e6d5;
+  --color-text-muted: #627864;
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+
+  --background: 130 24% 8%;
+  --foreground: 125 16% 86%;
+  --card: 128 18% 11%;
+  --card-foreground: 125 16% 86%;
+  --popover: 128 18% 11%;
+  --popover-foreground: 125 16% 86%;
+  --primary: 142 71% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 129 15% 16%;
+  --secondary-foreground: 125 16% 86%;
+  --muted: 129 15% 16%;
+  --muted-foreground: 128 10% 47%;
+  --accent: 129 15% 18%;
+  --accent-foreground: 125 16% 86%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 128 14% 18%;
+  --input: 128 14% 18%;
+  --ring: 142 71% 45%;
+}
+
+[data-theme="rose"] {
+  --color-bg: #180f14;
+  --color-surface: #211620;
+  --color-border: #332030;
+  --color-text: #f0d6e8;
+  --color-text-muted: #7c5c73;
+  --color-accent: #f43f5e;
+  --color-accent-hover: #e11d48;
+
+  --background: 323 24% 8%;
+  --foreground: 320 14% 89%;
+  --card: 321 18% 11%;
+  --card-foreground: 320 14% 89%;
+  --popover: 321 18% 11%;
+  --popover-foreground: 320 14% 89%;
+  --primary: 347 87% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 322 16% 18%;
+  --secondary-foreground: 320 14% 89%;
+  --muted: 322 16% 18%;
+  --muted-foreground: 322 12% 49%;
+  --accent: 322 16% 20%;
+  --accent-foreground: 320 14% 89%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 322 15% 20%;
+  --input: 322 15% 20%;
+  --ring: 347 87% 60%;
+}
+
+[data-theme="ocean"] {
+  --color-bg: #0f1923;
+  --color-surface: #162030;
+  --color-border: #1e3048;
+  --color-text: #cde4f5;
+  --color-text-muted: #527090;
+  --color-accent: #06b6d4;
+  --color-accent-hover: #0891b2;
+
+  --background: 210 30% 10%;
+  --foreground: 204 20% 88%;
+  --card: 210 33% 14%;
+  --card-foreground: 204 20% 88%;
+  --popover: 210 33% 14%;
+  --popover-foreground: 204 20% 88%;
+  --primary: 189 94% 43%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 28% 20%;
+  --secondary-foreground: 204 20% 88%;
+  --muted: 210 28% 20%;
+  --muted-foreground: 210 19% 50%;
+  --accent: 210 28% 22%;
+  --accent-foreground: 204 20% 88%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 27% 20%;
+  --input: 210 27% 20%;
+  --ring: 189 94% 43%;
+}
+
 [data-theme="light"] {
   --color-bg: #fafaf9;
   --color-surface: #ffffff;
@@ -42,7 +162,6 @@
   --color-accent: #d97706;
   --color-accent-hover: #b45309;
 
-  /* shadcn/ui CSS variables — light */
   --background: 0 0% 98%;
   --foreground: 222 47% 11%;
   --card: 0 0% 100%;
