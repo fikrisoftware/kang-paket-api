@@ -56,15 +56,15 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
 
   return (
     <div className="flex flex-col" style={{ flex: 1, overflow: 'hidden' }}>
-      {/* Tab header bar — height 36px */}
+      {/* Tab header bar */}
       <div
         className="flex items-end"
         style={{
-          height: 36,
+          height: 42,
           borderBottom: '1px solid var(--color-border)',
           background: 'var(--color-surface)',
           flexShrink: 0,
-          paddingLeft: 4
+          paddingLeft: 8
         }}
       >
         {TABS.map((t) => {
@@ -74,7 +74,7 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
               key={t.id}
               onClick={() => setActiveTab(t.id)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-4 py-2 text-[12px] border-b-2 transition-colors cursor-pointer',
+                'inline-flex items-center gap-2 px-4 py-2.5 text-xs border-b-2 transition-colors cursor-pointer',
                 'bg-transparent border-x-0 border-t-0',
                 isActive
                   ? 'border-b-[color:var(--color-accent)] font-medium'
@@ -87,7 +87,7 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
             >
               {t.label}
               {t.id === 'headers' && enabledHeaderCount > 0 && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 leading-none">
+                <Badge variant="secondary" className="text-xs px-1.5 h-5 leading-none">
                   {enabledHeaderCount}
                 </Badge>
               )}
@@ -119,7 +119,7 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
           <div className="flex flex-col h-full">
             {/* Body type selector */}
             <div
-              className="flex items-center gap-2 px-4 py-2"
+              className="flex items-center gap-2 px-4 py-3"
               style={{ borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}
             >
               {(['none', 'json', 'text', 'form-urlencoded'] as const).map((t) => {
@@ -129,10 +129,8 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
                     key={t}
                     onClick={() => onUpdate({ body: { ...request.body, type: t } })}
                     className={cn(
-                      'text-[11px] px-3 py-1 rounded-full transition-colors cursor-pointer border-none',
-                      isActive
-                        ? 'font-medium'
-                        : 'hover:opacity-80'
+                      'text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer border-none',
+                      isActive ? 'font-medium' : 'hover:opacity-80'
                     )}
                     style={{
                       background: isActive ? 'var(--color-accent)' : 'var(--color-border)',
@@ -178,9 +176,9 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
         )}
 
         {activeTab === 'auth' && (
-          <div className="p-4 flex flex-col gap-4">
+          <div className="p-5 flex flex-col gap-5">
             {/* Auth type selector */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {(['none', 'bearer', 'basic', 'api-key'] as const).map((t) => {
                 const isActive = request.auth.type === t
                 return (
@@ -188,7 +186,7 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
                     key={t}
                     onClick={() => onUpdate({ auth: { ...request.auth, type: t } })}
                     className={cn(
-                      'text-[11px] px-3 py-1 rounded-full transition-colors cursor-pointer border-none',
+                      'text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer border-none',
                       isActive ? 'font-medium' : 'hover:opacity-80'
                     )}
                     style={{
@@ -203,65 +201,83 @@ export function RequestTabs({ request, onUpdate }: Props): JSX.Element {
             </div>
 
             {request.auth.type === 'bearer' && (
-              <input
-                className="text-xs px-3 py-2 rounded border w-full font-mono"
-                style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
-                placeholder="Bearer token..."
-                value={request.auth.token ?? ''}
-                onChange={(e) => onUpdate({ auth: { ...request.auth, token: e.target.value } })}
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Token</label>
+                <input
+                  className="text-sm px-3 py-2.5 rounded-md border w-full font-mono"
+                  style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)', outline: 'none' }}
+                  placeholder="Bearer token..."
+                  value={request.auth.token ?? ''}
+                  onChange={(e) => onUpdate({ auth: { ...request.auth, token: e.target.value } })}
+                />
+              </div>
             )}
 
             {request.auth.type === 'basic' && (
-              <div className="flex flex-col gap-2">
-                <input
-                  className="text-xs px-3 py-2 rounded border font-mono"
-                  style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
-                  placeholder="Username"
-                  value={request.auth.username ?? ''}
-                  onChange={(e) => onUpdate({ auth: { ...request.auth, username: e.target.value } })}
-                />
-                <input
-                  className="text-xs px-3 py-2 rounded border font-mono"
-                  style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
-                  type="password"
-                  placeholder="Password"
-                  value={request.auth.password ?? ''}
-                  onChange={(e) => onUpdate({ auth: { ...request.auth, password: e.target.value } })}
-                />
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Username</label>
+                  <input
+                    className="text-sm px-3 py-2.5 rounded-md border font-mono"
+                    style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)', outline: 'none' }}
+                    placeholder="Username"
+                    value={request.auth.username ?? ''}
+                    onChange={(e) => onUpdate({ auth: { ...request.auth, username: e.target.value } })}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Password</label>
+                  <input
+                    className="text-sm px-3 py-2.5 rounded-md border font-mono"
+                    style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)', outline: 'none' }}
+                    type="password"
+                    placeholder="Password"
+                    value={request.auth.password ?? ''}
+                    onChange={(e) => onUpdate({ auth: { ...request.auth, password: e.target.value } })}
+                  />
+                </div>
               </div>
             )}
 
             {request.auth.type === 'api-key' && (
-              <div className="flex flex-col gap-2">
-                <input
-                  className="text-xs px-3 py-2 rounded border font-mono"
-                  style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
-                  placeholder="Key name (e.g. X-API-Key)"
-                  value={request.auth.apiKeyName ?? ''}
-                  onChange={(e) => onUpdate({ auth: { ...request.auth, apiKeyName: e.target.value } })}
-                />
-                <input
-                  className="text-xs px-3 py-2 rounded border font-mono"
-                  style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
-                  placeholder="Key value"
-                  value={request.auth.apiKeyValue ?? ''}
-                  onChange={(e) => onUpdate({ auth: { ...request.auth, apiKeyValue: e.target.value } })}
-                />
-                <select
-                  className="text-xs px-3 py-2 rounded border"
-                  style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
-                  value={request.auth.apiKeyIn ?? 'header'}
-                  onChange={(e) => onUpdate({ auth: { ...request.auth, apiKeyIn: e.target.value as 'header' | 'query' } })}
-                >
-                  <option value="header">Add to Header</option>
-                  <option value="query">Add to Query Params</option>
-                </select>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Key name</label>
+                  <input
+                    className="text-sm px-3 py-2.5 rounded-md border font-mono"
+                    style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)', outline: 'none' }}
+                    placeholder="e.g. X-API-Key"
+                    value={request.auth.apiKeyName ?? ''}
+                    onChange={(e) => onUpdate({ auth: { ...request.auth, apiKeyName: e.target.value } })}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Key value</label>
+                  <input
+                    className="text-sm px-3 py-2.5 rounded-md border font-mono"
+                    style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)', outline: 'none' }}
+                    placeholder="Key value"
+                    value={request.auth.apiKeyValue ?? ''}
+                    onChange={(e) => onUpdate({ auth: { ...request.auth, apiKeyValue: e.target.value } })}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Add to</label>
+                  <select
+                    className="text-sm px-3 py-2.5 rounded-md border"
+                    style={{ background: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)', outline: 'none' }}
+                    value={request.auth.apiKeyIn ?? 'header'}
+                    onChange={(e) => onUpdate({ auth: { ...request.auth, apiKeyIn: e.target.value as 'header' | 'query' } })}
+                  >
+                    <option value="header">Header</option>
+                    <option value="query">Query Params</option>
+                  </select>
+                </div>
               </div>
             )}
 
             {request.auth.type === 'none' && (
-              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 Request ini tidak menggunakan autentikasi.
               </p>
             )}

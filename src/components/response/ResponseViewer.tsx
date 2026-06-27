@@ -50,19 +50,31 @@ export function ResponseViewer({ response }: Props): JSX.Element {
   }
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
-    padding: '6px 14px', fontSize: 12, cursor: 'pointer', border: 'none', background: 'transparent',
+    padding: '8px 16px',
+    fontSize: 13,
+    cursor: 'pointer',
+    border: 'none',
+    background: 'transparent',
     color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
-    borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent'
+    borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6
   })
 
   return (
     <div className="flex flex-col h-full" style={{ borderTop: '1px solid var(--color-border)' }}>
       {/* Status bar */}
       <div
-        className="flex items-center gap-4 px-3 py-2"
-        style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', flexShrink: 0 }}
+        className="flex items-center gap-5 px-4"
+        style={{
+          height: 44,
+          borderBottom: '1px solid var(--color-border)',
+          background: 'var(--color-surface)',
+          flexShrink: 0
+        }}
       >
-        <span className={`text-xs font-bold font-mono ${statusClass(response.status)}`}>
+        <span className={`text-sm font-bold font-mono ${statusClass(response.status)}`}>
           {response.status} {response.statusText}
         </span>
         <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
@@ -74,19 +86,19 @@ export function ResponseViewer({ response }: Props): JSX.Element {
 
         <div className="flex-1" />
 
-        <button onClick={copyBody} title="Copy response" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
-          <Copy size={13} />
+        <button onClick={copyBody} title="Copy response" className="flex items-center justify-center w-8 h-8 rounded hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
+          <Copy size={15} />
         </button>
-        <button onClick={downloadBody} title="Download response" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
-          <Download size={13} />
+        <button onClick={downloadBody} title="Download response" className="flex items-center justify-center w-8 h-8 rounded hover:opacity-70 transition-opacity" style={{ color: 'var(--color-text-muted)' }}>
+          <Download size={15} />
         </button>
 
         {/* Tabs */}
-        <div style={{ borderLeft: '1px solid var(--color-border)', paddingLeft: 8 }}>
+        <div style={{ borderLeft: '1px solid var(--color-border)', paddingLeft: 12, display: 'flex', alignItems: 'flex-end', height: '100%' }}>
           <button style={tabStyle(activeTab === 'body')} onClick={() => setActiveTab('body')}>Body</button>
           <button style={tabStyle(activeTab === 'headers')} onClick={() => setActiveTab('headers')}>
             Headers
-            <span className="ml-1 text-[10px] px-1 rounded" style={{ background: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
+            <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
               {Object.keys(response.headers).length}
             </span>
           </button>
@@ -101,25 +113,25 @@ export function ResponseViewer({ response }: Props): JSX.Element {
             extensions={isJson(response.body) ? [json()] : []}
             theme={isDark ? 'dark' : 'light'}
             editable={false}
-            style={{ height: '100%', fontSize: 12 }}
+            style={{ height: '100%', fontSize: 13 }}
             basicSetup={{ lineNumbers: true, foldGutter: true }}
           />
         )}
 
         {activeTab === 'headers' && (
           <div className="overflow-y-auto h-full">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
-                  <th className="text-left px-3 py-2 font-semibold" style={{ color: 'var(--color-text-muted)', width: '40%' }}>Header</th>
-                  <th className="text-left px-3 py-2 font-semibold" style={{ color: 'var(--color-text-muted)' }}>Value</th>
+                  <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: 'var(--color-text-muted)', width: '40%' }}>Header</th>
+                  <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Value</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(response.headers).map(([key, value]) => (
-                  <tr key={key} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td className="px-3 py-1.5 font-mono" style={{ color: 'var(--color-accent)', fontSize: 11 }}>{key}</td>
-                    <td className="px-3 py-1.5 font-mono" style={{ color: 'var(--color-text)', fontSize: 11, wordBreak: 'break-all' }}>{value}</td>
+                  <tr key={key} style={{ borderBottom: '1px solid var(--color-border)' }} className="hover:bg-[var(--color-surface)] transition-colors">
+                    <td className="px-4 py-2.5 font-mono text-xs" style={{ color: 'var(--color-accent)' }}>{key}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs" style={{ color: 'var(--color-text)', wordBreak: 'break-all' }}>{value}</td>
                   </tr>
                 ))}
               </tbody>

@@ -129,16 +129,16 @@ export function RequestPanel(): JSX.Element {
             onClick={() => setShowSave(true)}
             title="Simpan request ke collection"
             style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '0 14px', height: 36, fontSize: 12, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '0 18px', height: 52, fontSize: 13, cursor: 'pointer',
               background: 'transparent', color: 'var(--color-text-muted)',
               border: '0', borderLeft: '1px solid var(--color-border)',
-              transition: 'color 0.15s'
+              transition: 'color 0.15s', flexShrink: 0
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text)')}
             onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
           >
-            <Save size={13} />
+            <Save size={15} />
             <span>Simpan</span>
           </button>
         )}

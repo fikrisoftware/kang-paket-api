@@ -31,10 +31,10 @@ export function KeyValueTable({ rows, onChange, keyPlaceholder = 'Key', valuePla
     color: 'var(--color-text)',
     border: 'none',
     outline: 'none',
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'monospace',
     width: '100%',
-    padding: '4px 8px'
+    padding: '8px 12px'
   }
 
   const cellStyle: React.CSSProperties = {
@@ -43,17 +43,17 @@ export function KeyValueTable({ rows, onChange, keyPlaceholder = 'Key', valuePla
   }
 
   return (
-    <div style={{ fontSize: 12 }}>
+    <div>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <tbody>
           {rows.map((row, idx) => (
             <tr key={idx} style={{ opacity: row.enabled ? 1 : 0.4 }}>
-              <td style={{ ...cellStyle, width: 28, textAlign: 'center' }}>
+              <td style={{ ...cellStyle, width: 40, textAlign: 'center' }}>
                 <input
                   type="checkbox"
                   checked={row.enabled}
                   onChange={(e) => update(idx, { enabled: e.target.checked })}
-                  style={{ accentColor: 'var(--color-accent)', cursor: 'pointer' }}
+                  style={{ accentColor: 'var(--color-accent)', cursor: 'pointer', width: 14, height: 14 }}
                 />
               </td>
               <td style={cellStyle}>
@@ -72,13 +72,13 @@ export function KeyValueTable({ rows, onChange, keyPlaceholder = 'Key', valuePla
                   onChange={(e) => update(idx, { value: e.target.value })}
                 />
               </td>
-              <td style={{ ...cellStyle, width: 28, textAlign: 'center', borderRight: 'none' }}>
+              <td style={{ ...cellStyle, width: 40, textAlign: 'center', borderRight: 'none' }}>
                 <button
                   onClick={() => remove(idx)}
                   className="hover:text-red-400 transition-colors"
-                  style={{ color: 'var(--color-text-muted)' }}
+                  style={{ color: 'var(--color-text-muted)', padding: 4 }}
                 >
-                  <Trash2 size={11} />
+                  <Trash2 size={14} />
                 </button>
               </td>
             </tr>
@@ -88,10 +88,10 @@ export function KeyValueTable({ rows, onChange, keyPlaceholder = 'Key', valuePla
 
       <button
         onClick={add}
-        className="flex items-center gap-1 px-3 py-2 text-xs hover:opacity-70 transition-opacity"
+        className="flex items-center gap-2 px-4 py-3 text-xs hover:opacity-70 transition-opacity"
         style={{ color: 'var(--color-text-muted)' }}
       >
-        <Plus size={11} /> Add
+        <Plus size={13} /> Add row
       </button>
     </div>
   )
