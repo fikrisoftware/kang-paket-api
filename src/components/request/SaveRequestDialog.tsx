@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useProjectStore } from '../../store/projectStore'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
 import { Input } from '../ui/input'
@@ -16,7 +16,15 @@ export function SaveRequestDialog({ defaultName, onClose, onConfirm }: Props): J
   const [newCollection, setNewCollection] = useState('')
   const [mode, setMode] = useState<'existing' | 'new'>('existing')
 
-  const collections = useProjectStore((s) => Object.keys(s.getCollections()))
+  // Pilih referensi stabil (array requests), lalu turunkan daftar collection via useMemo.
+  // Jangan return Object.keys(...) langsung dari selector — array baru tiap render
+  // memicu re-render tak terbatas (layar blank).
+  const requests = useProjectStore((s) => s.workspace?.requests)
+  const collections = useMemo(() => {
+    const set = new Set<string>()
+    for (const r of requests ?? []) set.add(r.collectionName ?? 'Default')
+    return [...set]
+  }, [requests])
 
   const effectiveCollection = mode === 'new' ? newCollection.trim() : collection
 
