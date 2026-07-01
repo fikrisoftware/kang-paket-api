@@ -1,4 +1,5 @@
 import { Send, Loader2 } from 'lucide-react'
+import { cn } from '../../lib/utils'
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
 
@@ -25,15 +26,23 @@ export function UrlBar({ method, url, isLoading, onMethodChange, onUrlChange, on
 
   return (
     <div
-      className="flex items-center gap-2 px-3 py-2"
-      style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', flexShrink: 0 }}
+      className="flex items-center gap-2 px-3"
+      style={{
+        height: 52,
+        borderBottom: '1px solid var(--color-border)',
+        background: 'var(--color-surface)',
+        flexShrink: 0
+      }}
     >
       {/* Method selector */}
       <select
         value={method}
         onChange={(e) => onMethodChange(e.target.value)}
-        className="text-xs font-bold font-mono rounded px-2 py-1.5 border-0 outline-none cursor-pointer"
-        style={{ background: color, color: '#fff', minWidth: 88 }}
+        className={cn(
+          'h-9 text-xs font-bold font-mono rounded-md px-2 border-0 outline-none cursor-pointer shrink-0',
+          'transition-colors'
+        )}
+        style={{ background: color, color: '#fff', minWidth: 80 }}
       >
         {METHODS.map((m) => (
           <option key={m} value={m} style={{ background: 'var(--color-surface)', color: 'var(--color-text)' }}>
@@ -49,7 +58,10 @@ export function UrlBar({ method, url, isLoading, onMethodChange, onUrlChange, on
         onChange={(e) => onUrlChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="https://api.example.com/endpoint"
-        className="flex-1 text-sm px-3 py-1.5 rounded outline-none border"
+        className={cn(
+          'flex-1 h-9 text-sm px-3 rounded-md outline-none border',
+          'transition-colors focus:ring-1 focus:ring-[var(--color-accent)]'
+        )}
         style={{
           background: 'var(--color-bg)',
           color: 'var(--color-text)',
@@ -62,11 +74,17 @@ export function UrlBar({ method, url, isLoading, onMethodChange, onUrlChange, on
       <button
         onClick={onSend}
         disabled={isLoading || !url.trim()}
-        className="flex items-center gap-1.5 px-4 py-1.5 rounded text-sm font-medium transition-opacity disabled:opacity-40"
+        className={cn(
+          'flex items-center gap-1.5 h-9 px-4 rounded-md text-sm font-medium shrink-0',
+          'transition-opacity disabled:opacity-40 hover:opacity-90 active:opacity-100'
+        )}
         style={{ background: 'var(--color-accent)', color: '#fff' }}
       >
-        {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-        {isLoading ? 'Sending...' : 'Send'}
+        {isLoading
+          ? <Loader2 size={14} className="animate-spin" />
+          : <Send size={14} />
+        }
+        <span>{isLoading ? 'Sending...' : 'Send'}</span>
       </button>
     </div>
   )

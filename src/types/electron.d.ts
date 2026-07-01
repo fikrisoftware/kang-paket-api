@@ -14,6 +14,7 @@ declare global {
       deleteRequest: (filePath: string) => Promise<void>
       loadProject: (projectPath: string) => Promise<WorkspaceTree>
       getHistory: () => Promise<HistoryEntry[]>
+      appendHistory: (entry: HistoryEntry) => Promise<void>
       clearHistory: () => Promise<void>
       importFile: () => Promise<WorkspaceTree | null>
       exportCollection: (collection: RequestItem[], format: string) => Promise<void>

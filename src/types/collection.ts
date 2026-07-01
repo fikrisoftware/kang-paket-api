@@ -11,4 +11,7 @@ export interface RequestItem {
   meta: { createdAt: string }
   filePath?: string
   collectionName?: string
+  /** Rantai nama folder/grup dari root ke daun, mis. ["Authorize", "Token"].
+   *  Sumber kebenaran untuk tampilan tree bertingkat di sidebar. */
+  groupPath?: string[]
 }

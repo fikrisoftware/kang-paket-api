@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useProjectStore } from '../../store/projectStore'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
+import { Input } from '../ui/input'
+import { Button } from '../ui/button'
 
 interface Props {
   defaultName: string
@@ -13,7 +16,15 @@ export function SaveRequestDialog({ defaultName, onClose, onConfirm }: Props): J
   const [newCollection, setNewCollection] = useState('')
   const [mode, setMode] = useState<'existing' | 'new'>('existing')
 
-  const collections = useProjectStore((s) => Object.keys(s.getCollections()))
+  // Pilih referensi stabil (array requests), lalu turunkan daftar collection via useMemo.
+  // Jangan return Object.keys(...) langsung dari selector — array baru tiap render
+  // memicu re-render tak terbatas (layar blank).
+  const requests = useProjectStore((s) => s.workspace?.requests)
+  const collections = useMemo(() => {
+    const set = new Set<string>()
+    for (const r of requests ?? []) set.add(r.collectionName ?? 'Default')
+    return [...set]
+  }, [requests])
 
   const effectiveCollection = mode === 'new' ? newCollection.trim() : collection
 
@@ -22,96 +33,76 @@ export function SaveRequestDialog({ defaultName, onClose, onConfirm }: Props): J
     onConfirm(name.trim(), effectiveCollection)
   }
 
-  const overlayStyle: React.CSSProperties = {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50
-  }
-  const cardStyle: React.CSSProperties = {
-    background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-    borderRadius: 8, padding: 24, width: 380, display: 'flex', flexDirection: 'column', gap: 16
-  }
   const inputStyle: React.CSSProperties = {
     background: 'var(--color-bg)', color: 'var(--color-text)',
     border: '1px solid var(--color-border)', borderRadius: 4,
     padding: '7px 12px', fontSize: 13, width: '100%', outline: 'none'
   }
-  const labelStyle: React.CSSProperties = { fontSize: 12, color: 'var(--color-text-muted)' }
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div style={cardStyle} onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)' }}>Simpan Request</h2>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>Simpan Request</DialogTitle>
+        </DialogHeader>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Nama Request</label>
-          <input
-            style={inputStyle}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
-          />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label style={labelStyle}>Collection</label>
-
-          <div style={{ display: 'flex', gap: 12 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-text)', cursor: 'pointer' }}>
-              <input type="radio" checked={mode === 'existing'} onChange={() => setMode('existing')} />
-              Pilih yang ada
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-text)', cursor: 'pointer' }}>
-              <input type="radio" checked={mode === 'new'} onChange={() => setMode('new')} />
-              Buat baru
-            </label>
-          </div>
-
-          {mode === 'existing' ? (
-            <select
-              style={{ ...inputStyle }}
-              value={collection}
-              onChange={(e) => setCollection(e.target.value)}
-            >
-              {collections.length === 0 && <option value="Default">Default</option>}
-              {collections.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              style={inputStyle}
-              placeholder="Nama collection baru"
-              value={newCollection}
-              onChange={(e) => setNewCollection(e.target.value)}
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Nama Request</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
             />
-          )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Collection</label>
+
+            <div className="flex gap-4">
+              <label className="flex items-center gap-1.5 text-sm cursor-pointer" style={{ color: 'var(--color-text)' }}>
+                <input type="radio" checked={mode === 'existing'} onChange={() => setMode('existing')} />
+                Pilih yang ada
+              </label>
+              <label className="flex items-center gap-1.5 text-sm cursor-pointer" style={{ color: 'var(--color-text)' }}>
+                <input type="radio" checked={mode === 'new'} onChange={() => setMode('new')} />
+                Buat baru
+              </label>
+            </div>
+
+            {mode === 'existing' ? (
+              <select
+                style={inputStyle}
+                value={collection}
+                onChange={(e) => setCollection(e.target.value)}
+              >
+                {collections.length === 0 && <option value="Default">Default</option>}
+                {collections.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            ) : (
+              <Input
+                placeholder="Nama collection baru"
+                value={newCollection}
+                onChange={(e) => setNewCollection(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
+              />
+            )}
+          </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '7px 16px', borderRadius: 4, fontSize: 13, cursor: 'pointer',
-              border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-muted)'
-            }}
-          >
-            Batal
-          </button>
-          <button
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Batal</Button>
+          <Button
             onClick={handleConfirm}
             disabled={!name.trim() || !effectiveCollection}
-            style={{
-              padding: '7px 16px', borderRadius: 4, fontSize: 13, cursor: 'pointer',
-              background: 'var(--color-accent)', color: '#fff', border: 'none',
-              opacity: (!name.trim() || !effectiveCollection) ? 0.4 : 1
-            }}
           >
             Simpan
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

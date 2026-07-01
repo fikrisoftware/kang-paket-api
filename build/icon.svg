@@ -1,0 +1,31 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="kpFaceL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F7882F"/>
+      <stop offset="1" stop-color="#EC6B12"/>
+    </linearGradient>
+    <linearGradient id="kpFaceR" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E0670F"/>
+      <stop offset="1" stop-color="#C9560A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="#272c38"/>
+
+  <path d="M150 232 L256 174 L238 146 L132 204 Z" fill="#FFA34D"/>
+  <path d="M362 232 L256 174 L274 146 L380 204 Z" fill="#FF9536"/>
+  <path d="M150 232 L256 174 L362 232 L256 290 Z" fill="#6E3208"/>
+  <path d="M150 232 L256 290 L256 420 L150 362 Z" fill="url(#kpFaceL)"/>
+  <path d="M256 290 L362 232 L362 362 L256 420 Z" fill="url(#kpFaceR)"/>
+
+  <g fill="none" stroke="#fff5ec" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M205 312 c-12 0 -8 16 -16 22 c8 6 4 22 16 22"/>
+    <path d="M233 322 c12 0 8 12 16 16 c-8 4 -4 16 -16 16"/>
+  </g>
+  <path d="M300 392 L334 330" stroke="#ffd9b8" stroke-width="11" stroke-linecap="round"/>
+
+  <g stroke="#FF8A2A" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M250 268 L386 150"/>
+    <path d="M330 150 L392 138 L380 198"/>
+  </g>
+</svg>

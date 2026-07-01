@@ -13,6 +13,11 @@ export function AppShell(): JSX.Element {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
+  // Remove legacy 'dark' class that may have been set by old code
+  useEffect(() => {
+    document.documentElement.classList.remove('dark')
+  }, [])
+
   return (
     <div className="flex flex-col h-full w-full" style={{ background: 'var(--color-bg)' }}>
       <TopBar />

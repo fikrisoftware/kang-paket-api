@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/* shadcn/ui utility overrides — map Tailwind classes ke CSS variables app */
+.bg-background  { background-color: var(--color-bg) !important; }
+.bg-card        { background-color: var(--color-surface) !important; }
+.bg-popover     { background-color: var(--color-surface) !important; }
+.bg-muted       { background-color: var(--color-border) !important; }
+.bg-secondary   { background-color: var(--color-border) !important; }
+.bg-primary     { background-color: var(--color-accent) !important; }
+.bg-destructive { background-color: #ef4444 !important; }
+.bg-input       { background-color: var(--color-border) !important; }
+
+.text-foreground         { color: var(--color-text) !important; }
+.text-muted-foreground   { color: var(--color-text-muted) !important; }
+.text-primary-foreground { color: #fff !important; }
+.text-card-foreground    { color: var(--color-text) !important; }
+.text-popover-foreground { color: var(--color-text) !important; }
+
+.border-border  { border-color: var(--color-border) !important; }
+.border-input   { border-color: var(--color-border) !important; }
+
+.ring-ring      { --tw-ring-color: var(--color-accent) !important; }
+
+.hover\:bg-accent:hover     { background-color: var(--color-border) !important; }
+.hover\:bg-primary\/90:hover { background-color: var(--color-accent-hover) !important; }
+.hover\:text-accent-foreground:hover { color: var(--color-text) !important; }
+
+/* ── App color tokens ─────────────────────────────────────────── */
 :root {
   --color-bg: #0f1117;
   --color-surface: #1a1d27;
@@ -8,6 +34,148 @@
   --color-text-muted: #64748b;
   --color-accent: #10b981;
   --color-accent-hover: #059669;
+
+  /* shadcn/ui CSS variables — dark (default) */
+  --background: 222 47% 7%;
+  --foreground: 213 31% 91%;
+  --card: 224 40% 12%;
+  --card-foreground: 213 31% 91%;
+  --popover: 224 40% 12%;
+  --popover-foreground: 213 31% 91%;
+  --primary: 160 84% 39%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 224 30% 18%;
+  --secondary-foreground: 213 31% 91%;
+  --muted: 224 30% 18%;
+  --muted-foreground: 215 20% 50%;
+  --accent: 224 30% 20%;
+  --accent-foreground: 213 31% 91%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 224 25% 20%;
+  --input: 224 25% 20%;
+  --ring: 160 84% 39%;
+  --radius: 0.5rem;
+}
+
+[data-theme="midnight"] {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-border: #21262d;
+  --color-text: #c9d1d9;
+  --color-text-muted: #6e7681;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+
+  --background: 216 28% 7%;
+  --foreground: 210 17% 82%;
+  --card: 215 25% 11%;
+  --card-foreground: 210 17% 82%;
+  --popover: 215 25% 11%;
+  --popover-foreground: 210 17% 82%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 20% 16%;
+  --secondary-foreground: 210 17% 82%;
+  --muted: 215 20% 16%;
+  --muted-foreground: 214 13% 47%;
+  --accent: 215 20% 18%;
+  --accent-foreground: 210 17% 82%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 215 18% 16%;
+  --input: 215 18% 16%;
+  --ring: 217 91% 60%;
+}
+
+[data-theme="forest"] {
+  --color-bg: #0f1711;
+  --color-surface: #161d18;
+  --color-border: #243026;
+  --color-text: #d4e6d5;
+  --color-text-muted: #627864;
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+
+  --background: 130 24% 8%;
+  --foreground: 125 16% 86%;
+  --card: 128 18% 11%;
+  --card-foreground: 125 16% 86%;
+  --popover: 128 18% 11%;
+  --popover-foreground: 125 16% 86%;
+  --primary: 142 71% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 129 15% 16%;
+  --secondary-foreground: 125 16% 86%;
+  --muted: 129 15% 16%;
+  --muted-foreground: 128 10% 47%;
+  --accent: 129 15% 18%;
+  --accent-foreground: 125 16% 86%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 128 14% 18%;
+  --input: 128 14% 18%;
+  --ring: 142 71% 45%;
+}
+
+[data-theme="rose"] {
+  --color-bg: #180f14;
+  --color-surface: #211620;
+  --color-border: #332030;
+  --color-text: #f0d6e8;
+  --color-text-muted: #7c5c73;
+  --color-accent: #f43f5e;
+  --color-accent-hover: #e11d48;
+
+  --background: 323 24% 8%;
+  --foreground: 320 14% 89%;
+  --card: 321 18% 11%;
+  --card-foreground: 320 14% 89%;
+  --popover: 321 18% 11%;
+  --popover-foreground: 320 14% 89%;
+  --primary: 347 87% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 322 16% 18%;
+  --secondary-foreground: 320 14% 89%;
+  --muted: 322 16% 18%;
+  --muted-foreground: 322 12% 49%;
+  --accent: 322 16% 20%;
+  --accent-foreground: 320 14% 89%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 322 15% 20%;
+  --input: 322 15% 20%;
+  --ring: 347 87% 60%;
+}
+
+[data-theme="ocean"] {
+  --color-bg: #0f1923;
+  --color-surface: #162030;
+  --color-border: #1e3048;
+  --color-text: #cde4f5;
+  --color-text-muted: #527090;
+  --color-accent: #06b6d4;
+  --color-accent-hover: #0891b2;
+
+  --background: 210 30% 10%;
+  --foreground: 204 20% 88%;
+  --card: 210 33% 14%;
+  --card-foreground: 204 20% 88%;
+  --popover: 210 33% 14%;
+  --popover-foreground: 204 20% 88%;
+  --primary: 189 94% 43%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 28% 20%;
+  --secondary-foreground: 204 20% 88%;
+  --muted: 210 28% 20%;
+  --muted-foreground: 210 19% 50%;
+  --accent: 210 28% 22%;
+  --accent-foreground: 204 20% 88%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 27% 20%;
+  --input: 210 27% 20%;
+  --ring: 189 94% 43%;
 }
 
 [data-theme="light"] {
@@ -18,13 +186,33 @@
   --color-text-muted: #94a3b8;
   --color-accent: #d97706;
   --color-accent-hover: #b45309;
+
+  --background: 0 0% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 38 92% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 94%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 38 92% 50%;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* NOTE: Jangan tambahkan `* { padding: 0; margin: 0 }` di sini.
+   Di Tailwind v4 semua utility (px-*, py-*, p-*) ada di dalam @layer,
+   dan CSS tanpa layer SELALU menang atas CSS ber-layer — reset unlayered
+   itu akan menghapus semua padding utility di seluruh app.
+   Preflight Tailwind sudah menangani box-sizing & reset margin. */
 
 html, body, #root {
   height: 100%;

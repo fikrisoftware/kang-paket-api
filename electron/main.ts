@@ -1,5 +1,10 @@
 import { app, BrowserWindow, shell, Menu } from 'electron'
 import { join } from 'path'
+
+function iconPath(): string {
+  const base = app.isPackaged ? process.resourcesPath : join(__dirname, '../../resources')
+  return join(base, process.platform === 'win32' ? 'icon.ico' : 'icon.png')
+}
 import { registerHttpHandlers } from './ipc/http-handler'
 import { registerFsHandlers } from './ipc/fs-handler'
 import { registerHistoryHandlers } from './ipc/history-handler'
@@ -13,6 +18,7 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     show: false,
+    icon: iconPath(),
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     backgroundColor: '#0f1117',
     webPreferences: {

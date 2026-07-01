@@ -28,7 +28,8 @@ export default defineConfig({
     root: '.',
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src')
+        '@': resolve(__dirname, 'src'),
+        'src': resolve(__dirname, 'src')
       }
     },
     plugins: [react(), tailwindcss()],

@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "gen:icons": "node scripts/gen-icons.mjs",
     "typecheck": "tsc --noEmit",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
@@ -26,12 +27,16 @@
     "@radix-ui/react-dropdown-menu": "^2.1.4",
     "@radix-ui/react-tabs": "^1.1.2",
     "@uiw/react-codemirror": "^4.23.7",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "js-yaml": "^4.1.0",
     "jsonpath-plus": "^10.3.0",
     "lucide-react": "^0.469.0",
+    "radix-ui": "^1.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-resizable-panels": "^2.1.7",
+    "tailwind-merge": "^3.6.0",
     "uuid": "^11.0.5",
     "zustand": "^5.0.3"
   },
@@ -47,6 +52,9 @@
     "electron": "^34.0.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^3.0.0",
+    "playwright-core": "^1.61.1",
+    "png2icons": "^2.0.1",
+    "sharp": "^0.35.2",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.3"
   },
@@ -58,6 +66,15 @@
     },
     "files": [
       "out/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": ".",
+        "filter": [
+          "icon.*"
+        ]
+      }
     ],
     "win": {
       "target": [
